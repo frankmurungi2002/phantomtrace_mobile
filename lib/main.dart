@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'core/theme/app_theme.dart';
-import 'features/auth/login_screen.dart';
+import 'features/dashboard/dashboard_screen.dart';
 
 void main() {
   runApp(const PhantomTraceApp());
@@ -15,7 +16,7 @@ class PhantomTraceApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'PhantomTrace',
       theme: AppTheme.darkTheme,
-      home: const LoginScreen(),
+      home: const DashboardScreen(),
     );
   }
 }
