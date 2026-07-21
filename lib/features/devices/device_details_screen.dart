@@ -1,129 +1,246 @@
 import 'package:flutter/material.dart';
 
-class DeviceDetailsScreen extends StatelessWidget {
-  const DeviceDetailsScreen({super.key});
+import '../../models/device_overview.dart';
+import '../../services/device_overview_service.dart';
+import '../../services/token_service.dart';
+
+class DeviceDetailsScreen extends StatefulWidget {
+  final String deviceId;
+
+  const DeviceDetailsScreen({
+    super.key,
+    required this.deviceId,
+  });
+
+  @override
+  State<DeviceDetailsScreen> createState() =>
+      _DeviceDetailsScreenState();
+}
+
+class _DeviceDetailsScreenState
+    extends State<DeviceDetailsScreen> {
+
+  Future<DeviceOverview> loadOverview() async {
+    final token =
+        await TokenService().getToken();
+
+    return DeviceOverviewService()
+        .getOverview(
+      token!,
+      widget.deviceId,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0B0F19),
-
       appBar: AppBar(
         backgroundColor: const Color(0xFF0B0F19),
         elevation: 0,
         title: const Text(
           'Device Overview',
-          style: TextStyle(
-            color: Colors.white,
-          ),
         ),
       ),
+      body: FutureBuilder<DeviceOverview>(
+        future: loadOverview(),
+        builder: (context, snapshot) {
 
-      body: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          if (!snapshot.hasData) {
+            return const Center(
+              child:
+                  CircularProgressIndicator(),
+            );
+          }
 
-            const Text(
-              'Francis Laptop',
-              style: TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-              ),
-            ),
+          final overview =
+              snapshot.data!;
 
-            const SizedBox(height: 12),
+          return Padding(
+            padding:
+                const EdgeInsets.all(32),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
 
-            const Text(
-              'ONLINE',
-              style: TextStyle(
-                color: Colors.green,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(30),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF111827),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: const Color(0xFF1F2937),
+                  const Text(
+                    'Device Intelligence',
+                    style: TextStyle(
+                      fontSize: 34,
+                      fontWeight:
+                          FontWeight.w800,
+                    ),
                   ),
-                ),
-                child: Column(
-                  children: [
 
-                    _row('Hostname', 'FrankKali'),
+                  const SizedBox(
+                      height: 10),
 
-                    _row(
-                      'Operating System',
-                      'Kali Linux',
+                  Text(
+                    overview.online
+                        ? 'ONLINE'
+                        : 'OFFLINE',
+                    style: TextStyle(
+                      color:
+                          overview.online
+                              ? Colors.green
+                              : Colors.orange,
+                      fontWeight:
+                          FontWeight.w700,
                     ),
+                  ),
 
-                    _row('Username', 'root'),
+                  const SizedBox(
+                      height: 30),
 
-                    _row(
-                      'IP Address',
-                      '127.0.1.1',
-                    ),
+                  _section(
+                    'System',
+                    [
+                      _row(
+                        'Hostname',
+                        overview.hostname,
+                      ),
+                      _row(
+                        'Username',
+                        overview.username,
+                      ),
+                      _row(
+                        'OS',
+                        overview.osName,
+                      ),
+                      _row(
+                        'Version',
+                        overview.osVersion,
+                      ),
+                    ],
+                  ),
 
-                    const Divider(
-                      color: Colors.white24,
-                    ),
+                  const SizedBox(
+                      height: 20),
 
-                    _row('Processes', '100'),
+                  _section(
+                    'Network',
+                    [
+                      _row(
+                        'IP Address',
+                        overview.ipAddress,
+                      ),
+                      _row(
+                        'MAC Address',
+                        overview.macAddress,
+                      ),
+                    ],
+                  ),
 
-                    _row(
-                      'Free Disk',
-                      '27.56 GB',
-                    ),
-                  ],
-                ),
+                  const SizedBox(
+                      height: 20),
+
+                  _section(
+                    'Storage',
+                    [
+                      _row(
+                        'Free Disk',
+                        '${overview.freeGb} GB',
+                      ),
+                      _row(
+                        'Used Disk',
+                        '${overview.usedGb} GB',
+                      ),
+                      _row(
+                        'Total Disk',
+                        '${overview.totalGb} GB',
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(
+                      height: 20),
+
+                  _section(
+                    'Activity',
+                    [
+                      _row(
+                        'Processes',
+                        overview
+                            .processCount
+                            .toString(),
+                      ),
+                      _row(
+                        'Commands',
+                        overview
+                            .commandCount
+                            .toString(),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  static Widget _row(
+  Widget _section(
+    String title,
+    List<Widget> children,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding:
+          const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111827),
+        borderRadius:
+            BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight:
+                  FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _row(
     String label,
     String value,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: 14,
+      padding:
+          const EdgeInsets.symmetric(
+        vertical: 8,
       ),
       child: Row(
         children: [
-
           SizedBox(
-            width: 180,
+            width: 140,
             child: Text(
               label,
               style: const TextStyle(
                 color: Colors.white70,
-                fontSize: 15,
               ),
             ),
           ),
-
           Expanded(
             child: Text(
               value,
               style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
+                fontWeight:
+                    FontWeight.w600,
               ),
             ),
           ),

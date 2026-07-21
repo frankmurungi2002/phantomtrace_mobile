@@ -158,7 +158,9 @@ class _DashboardScreenState
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) =>
-                                      const DeviceDetailsScreen(),
+                                      DeviceDetailsScreen(
+deviceId: device.id,
+),
                                 ),
                               );
                             },
