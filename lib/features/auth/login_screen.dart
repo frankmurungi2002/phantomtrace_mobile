@@ -1,10 +1,65 @@
 import 'package:flutter/material.dart';
+import '../../services/auth_service.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+
+  final emailController = TextEditingController(
+    text: 'frankmurungi2002@gmail.com',
+  );
+
+  final passwordController = TextEditingController(
+    text: 'Uttorent@24',
+  );
+
+  bool loading = false;
+
+  Future<void> login() async {
+
+    setState(() {
+      loading = true;
+    });
+
+    try {
+
+      final token = await AuthService().login(
+        emailController.text,
+        passwordController.text,
+      );
+
+      debugPrint('JWT TOKEN: $token');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login successful'),
+        ),
+      );
+
+    } catch (e) {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+        ),
+      );
+    }
+
+    setState(() {
+      loading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       body: Center(
         child: SizedBox(
@@ -35,93 +90,22 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 12),
-
-                Text(
-                  'Monitor devices. Collect evidence. Respond instantly.',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey.shade500,
-                    height: 1.6,
-                  ),
-                ),
-
-                const SizedBox(height: 50),
+                const SizedBox(height: 40),
 
                 TextField(
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                  decoration: InputDecoration(
+                  controller: emailController,
+                  decoration: const InputDecoration(
                     hintText: 'Email Address',
-                    filled: true,
-                    fillColor: const Color(0xFF111827),
-
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 22,
-                    ),
-
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none,
-                    ),
-
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: const BorderSide(
-                        color: Color(0xFF1F2937),
-                      ),
-                    ),
-
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: const BorderSide(
-                        color: Color(0xFF3B82F6),
-                        width: 2,
-                      ),
-                    ),
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
                 TextField(
+                  controller: passwordController,
                   obscureText: true,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Password',
-                    filled: true,
-                    fillColor: const Color(0xFF111827),
-
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 22,
-                    ),
-
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none,
-                    ),
-
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: const BorderSide(
-                        color: Color(0xFF1F2937),
-                      ),
-                    ),
-
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: const BorderSide(
-                        color: Color(0xFF3B82F6),
-                        width: 2,
-                      ),
-                    ),
                   ),
                 ),
 
@@ -131,21 +115,11 @@ class LoginScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 60,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    onPressed: () {},
-                    child: const Text(
-                      'Sign In',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    onPressed: loading ? null : login,
+                    child: Text(
+                      loading
+                          ? 'Signing In...'
+                          : 'Sign In',
                     ),
                   ),
                 ),

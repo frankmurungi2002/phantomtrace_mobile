@@ -8,129 +8,148 @@ class DashboardScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.all(36),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
+              const Text(
+                'PHANTOMTRACE',
+                style: TextStyle(
+                  fontSize: 14,
+                  letterSpacing: 4,
+                  color: Colors.white70,
+                ),
+              ),
+
               const SizedBox(height: 20),
 
               const Text(
-                'Good Afternoon, Francis',
+                'Security Operations',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 42,
                   fontWeight: FontWeight.w800,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              Text(
-                'Monitor and manage your endpoints.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey.shade500,
+                  color: Colors.white,
                 ),
               ),
 
               const SizedBox(height: 32),
 
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(36),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF111827),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(
+                      color: const Color(0xFF1F2937),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
 
-                decoration: BoxDecoration(
-                  color: const Color(0xFF111827),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
-                    Text(
-                      'Endpoint Overview',
-                      style: TextStyle(
-                        fontSize: 16,
+                      const Text(
+                        'ACTIVE ENDPOINT',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          letterSpacing: 2,
+                        ),
                       ),
-                    ),
 
-                    SizedBox(height: 16),
+                      const Spacer(),
 
-                    Text(
-                      '1',
-                      style: TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.w900,
+                      const Text(
+                        '1',
+                        style: TextStyle(
+                          fontSize: 120,
+                          height: 1,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
 
-                    Text(
-                      'Device Online',
-                    ),
-                  ],
-                ),
-              ),
+                      const Text(
+                        'Device Online',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
 
-              const SizedBox(height: 32),
+                      const SizedBox(height: 12),
 
-              const Text(
-                'Devices',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+                      const Text(
+                        'All systems operational',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white70,
+                        ),
+                      ),
 
-              const SizedBox(height: 16),
+                      const Spacer(),
 
-              Container(
-                padding: const EdgeInsets.all(20),
+                      Container(
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0B0F19),
+                          borderRadius:
+                              BorderRadius.circular(22),
+                        ),
+                        child: const Row(
+                          children: [
 
-                decoration: BoxDecoration(
-                  color: const Color(0xFF111827),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-
-                child: const Row(
-                  children: [
-
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: Color(0xFF3B82F6),
-                      child: Icon(Icons.computer),
-                    ),
-
-                    SizedBox(width: 16),
-
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
-
-                          Text(
-                            'Francis Laptop',
-                            style: TextStyle(
-                              fontWeight:
-                                  FontWeight.w700,
-                              fontSize: 16,
+                            Icon(
+                              Icons.computer,
+                              color: Colors.green,
                             ),
-                          ),
 
-                          SizedBox(height: 6),
+                            SizedBox(width: 14),
 
-                          Text(
-                            'Linux • Online',
-                          ),
-                        ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+
+                                  Text(
+                                    'Francis Laptop',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight:
+                                          FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+
+                                  SizedBox(height: 4),
+
+                                  Text(
+                                    'Kali Linux',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            Text(
+                              'ONLINE',
+                              style: TextStyle(
+                                color: Colors.green,
+                                fontWeight:
+                                    FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-
-                    Icon(
-                      Icons.chevron_right,
-                    )
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
