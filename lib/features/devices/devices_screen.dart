@@ -1,7 +1,30 @@
 import 'package:flutter/material.dart';
 
-class DevicesScreen extends StatelessWidget {
+import '../../models/device.dart';
+import '../../services/device_service.dart';
+import '../../services/token_service.dart';
+
+class DevicesScreen extends StatefulWidget {
   const DevicesScreen({super.key});
+
+  @override
+  State<DevicesScreen> createState() =>
+      _DevicesScreenState();
+}
+
+class _DevicesScreenState
+    extends State<DevicesScreen> {
+
+  Future<List<Device>> loadDevices() async {
+    final token =
+        await TokenService().getToken();
+
+    if (token == null) {
+      return [];
+    }
+
+    return DeviceService().getDevices(token);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +34,8 @@ class DevicesScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
             children: [
 
               const Text(
@@ -34,73 +58,163 @@ class DevicesScreen extends StatelessWidget {
 
               const SizedBox(height: 28),
 
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF111827),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Row(
-                  children: [
+              Expanded(
+                child: FutureBuilder<List<Device>>(
+                  future: loadDevices(),
+                  builder:
+                      (context, snapshot) {
 
-                    Container(
-                      width: 58,
-                      height: 58,
-                      decoration: const BoxDecoration(
-                        color: Color(0x3322C55E),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.laptop,
-                        color: Color(0xFF22C55E),
-                      ),
-                    ),
+                    if (!snapshot.hasData) {
+                      return const Center(
+                        child:
+                            CircularProgressIndicator(),
+                      );
+                    }
 
-                    const SizedBox(width: 18),
+                    final devices =
+                        snapshot.data!;
 
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
+                    if (devices.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'No Devices Found',
+                        ),
+                      );
+                    }
 
-                          Text(
-                            'Francis Laptop',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                    return ListView.builder(
+                      itemCount:
+                          devices.length,
+                      itemBuilder:
+                          (context, index) {
+
+                        final device =
+                            devices[index];
+
+                        return Container(
+                          margin:
+                              const EdgeInsets.only(
+                            bottom: 16,
+                          ),
+                          padding:
+                              const EdgeInsets.all(
+                            24,
+                          ),
+                          decoration:
+                              BoxDecoration(
+                            color: const Color(
+                              0xFF111827,
+                            ),
+                            borderRadius:
+                                BorderRadius
+                                    .circular(
+                              24,
                             ),
                           ),
+                          child: Row(
+                            children: [
 
-                          SizedBox(height: 6),
+                              Container(
+                                width: 58,
+                                height: 58,
+                                decoration:
+                                    BoxDecoration(
+                                  color:
+                                      device.online
+                                          ? const Color(
+                                              0x3322C55E)
+                                          : const Color(
+                                              0x33F59E0B),
+                                  shape:
+                                      BoxShape
+                                          .circle,
+                                ),
+                                child: Icon(
+                                  Icons.laptop,
+                                  color: device
+                                          .online
+                                      ? const Color(
+                                          0xFF22C55E)
+                                      : Colors
+                                          .orange,
+                                ),
+                              ),
 
-                          Text(
-                            'Kali Linux',
-                            style: TextStyle(
-                              color: Colors.white70,
-                            ),
+                              const SizedBox(
+                                  width: 18),
+
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment
+                                          .start,
+                                  children: [
+
+                                    Text(
+                                      device
+                                          .deviceName,
+                                      style:
+                                          const TextStyle(
+                                        fontSize:
+                                            18,
+                                        fontWeight:
+                                            FontWeight
+                                                .w700,
+                                        color: Colors
+                                            .white,
+                                      ),
+                                    ),
+
+                                    const SizedBox(
+                                      height: 6,
+                                    ),
+
+                                    Text(
+                                      device.status,
+                                      style:
+                                          const TextStyle(
+                                        color: Colors
+                                            .white70,
+                                      ),
+                                    ),
+
+                                    const SizedBox(
+                                      height: 6,
+                                    ),
+
+                                    Text(
+                                      device.online
+                                          ? 'ONLINE'
+                                          : 'OFFLINE',
+                                      style:
+                                          TextStyle(
+                                        color: device
+                                                .online
+                                            ? const Color(
+                                                0xFF22C55E)
+                                            : Colors
+                                                .orange,
+                                        fontWeight:
+                                            FontWeight
+                                                .w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const Icon(
+                                Icons
+                                    .chevron_right,
+                                color:
+                                    Colors.white70,
+                              ),
+                            ],
                           ),
-
-                          SizedBox(height: 6),
-
-                          Text(
-                            'ONLINE',
-                            style: TextStyle(
-                              color: Color(0xFF22C55E),
-                              fontWeight:
-                                  FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const Icon(
-                      Icons.chevron_right,
-                      color: Colors.white70,
-                    ),
-                  ],
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ],
