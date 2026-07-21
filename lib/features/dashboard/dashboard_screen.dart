@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../devices/device_details_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -12,7 +13,6 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               const Text(
                 'PHANTOMTRACE',
                 style: TextStyle(
@@ -29,7 +29,6 @@ class DashboardScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 42,
                   fontWeight: FontWeight.w800,
-                  color: Colors.white,
                 ),
               ),
 
@@ -47,10 +46,8 @@ class DashboardScreen extends StatelessWidget {
                     ),
                   ),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       const Text(
                         'ACTIVE ENDPOINT',
                         style: TextStyle(
@@ -67,7 +64,6 @@ class DashboardScreen extends StatelessWidget {
                           fontSize: 120,
                           height: 1,
                           fontWeight: FontWeight.w900,
-                          color: Colors.white,
                         ),
                       ),
 
@@ -76,7 +72,6 @@ class DashboardScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
                         ),
                       ),
 
@@ -92,60 +87,68 @@ class DashboardScreen extends StatelessWidget {
 
                       const Spacer(),
 
-                      Container(
-                        padding: const EdgeInsets.all(22),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0B0F19),
-                          borderRadius:
-                              BorderRadius.circular(22),
-                        ),
-                        child: const Row(
-                          children: [
-
-                            Icon(
-                              Icons.computer,
-                              color: Colors.green,
+                      InkWell(
+                        borderRadius: BorderRadius.circular(22),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const DeviceDetailsScreen(),
                             ),
-
-                            SizedBox(width: 14),
-
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                children: [
-
-                                  Text(
-                                    'Francis Laptop',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight:
-                                          FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-
-                                  SizedBox(height: 4),
-
-                                  Text(
-                                    'Kali Linux',
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            Text(
-                              'ONLINE',
-                              style: TextStyle(
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(22),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0B0F19),
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(
+                                Icons.computer,
                                 color: Colors.green,
-                                fontWeight:
-                                    FontWeight.w700,
                               ),
-                            ),
-                          ],
+
+                              SizedBox(width: 14),
+
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Francis Laptop',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight:
+                                            FontWeight.w700,
+                                      ),
+                                    ),
+
+                                    SizedBox(height: 4),
+
+                                    Text(
+                                      'Kali Linux',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              Text(
+                                'ONLINE',
+                                style: TextStyle(
+                                  color: Colors.green,
+                                  fontWeight:
+                                      FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],

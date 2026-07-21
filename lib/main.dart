@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'core/theme/app_theme.dart';
-import 'features/dashboard/dashboard_screen.dart';
+import 'features/devices/device_details_screen.dart';
 
 void main() {
   runApp(const PhantomTraceApp());
@@ -12,11 +10,9 @@ class PhantomTraceApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'PhantomTrace',
-      theme: AppTheme.darkTheme,
-      home: const DashboardScreen(),
+      home: DeviceDetailsScreen(),
     );
   }
 }
