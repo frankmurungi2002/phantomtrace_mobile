@@ -35,70 +35,64 @@ class _EvidenceScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(
-        0xFF0B0F19,
-      ),
+      backgroundColor:
+          const Color(0xFF0B0F19),
       appBar: AppBar(
-        backgroundColor: const Color(
-          0xFF0B0F19,
-        ),
+        backgroundColor:
+            const Color(0xFF0B0F19),
         title: const Text(
           'Evidence',
         ),
       ),
-      body: FutureBuilder<List<EvidencePhoto>>(
-        future: loadEvidence(),
-        builder: (
-          context,
-          snapshot,
-        ) {
-          if (!snapshot.hasData) {
-            return const Center(
-              child:
-                  CircularProgressIndicator(),
-            );
-          }
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {});
+        },
+        child: FutureBuilder<List<EvidencePhoto>>(
+          future: loadEvidence(),
+          builder: (
+            context,
+            snapshot,
+          ) {
+            if (!snapshot.hasData) {
+              return const Center(
+                child:
+                    CircularProgressIndicator(),
+              );
+            }
 
-          final photos =
-              snapshot.data!;
+            final photos =
+                snapshot.data!;
 
-          if (photos.isEmpty) {
-            return const Center(
-              child: Text(
-                'No Evidence Found',
-                style: TextStyle(
-                  color: Colors.white70,
-                ),
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding:
-                const EdgeInsets.all(24),
-            itemCount:
-                photos.length,
-            itemBuilder:
-                (context, index) {
-              final photo =
-                  photos[index];
-
-              return InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          PhotoViewerScreen(
-                        photoId: photo.id,
+            if (photos.isEmpty) {
+              return ListView(
+                children: const [
+                  SizedBox(height: 250),
+                  Center(
+                    child: Text(
+                      'No Evidence Found',
+                      style: TextStyle(
+                        color: Colors.white70,
                       ),
                     ),
-                  );
-                },
-                child: Container(
+                  ),
+                ],
+              );
+            }
+
+            return Column(
+              children: [
+                Container(
                   margin:
-                      const EdgeInsets.only(
-                    bottom: 16,
+                      const EdgeInsets.fromLTRB(
+                    24,
+                    24,
+                    24,
+                    0,
+                  ),
+                  padding:
+                      const EdgeInsets.all(
+                    20,
                   ),
                   decoration:
                       BoxDecoration(
@@ -110,169 +104,69 @@ class _EvidenceScreenState
                       20,
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment
-                            .start,
+                  child: Row(
                     children: [
-                      ClipRRect(
-                        borderRadius:
-                            const BorderRadius.only(
-                          topLeft:
-                              Radius.circular(
-                            20,
-                          ),
-                          topRight:
-                              Radius.circular(
-                            20,
-                          ),
-                        ),
-                        child:
-                            CachedNetworkImage(
-                          imageUrl:
-                              'http://127.0.0.1:5000/api/evidence/photo/${photo.id}',
-                          height: 140,
-                          width:
-                              double.infinity,
-                          fit: BoxFit.cover,
-                          errorWidget:
-                              (
-                            context,
-                            url,
-                            error,
-                          ) {
-                            return Container(
-                              height: 140,
-                              color:
-                                  const Color(
-                                0xFF1F2937,
-                              ),
-                              child:
-                                  const Center(
-                                child: Icon(
-                                  Icons.image,
-                                  color:
-                                      Colors.white54,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding:
-                            const EdgeInsets.all(
-                          20,
-                        ),
+                      Expanded(
                         child: Column(
                           crossAxisAlignment:
                               CrossAxisAlignment
                                   .start,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.camera_alt,
-                                  color:
-                                      Colors.blue,
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                const Expanded(
-                                  child: Text(
-                                    'Screenshot',
-                                    style:
-                                        TextStyle(
-                                      color:
-                                          Colors.white,
-                                      fontSize:
-                                          18,
-                                      fontWeight:
-                                          FontWeight
-                                              .w700,
-                                    ),
-                                  ),
-                                ),
-                                if (index == 0)
-                                  Container(
-                                    padding:
-                                        const EdgeInsets.symmetric(
-                                      horizontal:
-                                          10,
-                                      vertical:
-                                          4,
-                                    ),
-                                    decoration:
-                                        BoxDecoration(
-                                      color:
-                                          Colors.blue,
-                                      borderRadius:
-                                          BorderRadius.circular(
-                                        999,
-                                      ),
-                                    ),
-                                    child:
-                                        const Text(
-                                      'LATEST',
-                                      style:
-                                          TextStyle(
-                                        color:
-                                            Colors.white,
-                                        fontSize:
-                                            11,
-                                        fontWeight:
-                                            FontWeight
-                                                .w700,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                            Text(
-                              DateFormat(
-                                'dd MMM yyyy • HH:mm',
-                              ).format(
-                                DateTime.parse(
-                                  photo.timestamp,
-                                ),
-                              ),
-                              style:
-                                  const TextStyle(
+                            const Text(
+                              'Total Evidence',
+                              style: TextStyle(
                                 color:
                                     Colors.white70,
                               ),
                             ),
                             const SizedBox(
-                              height: 12,
+                              height: 6,
                             ),
-                            const Row(
-                              children: [
-                                Text(
-                                  'Tap to view',
-                                  style:
-                                      TextStyle(
-                                    color:
-                                        Colors.blue,
-                                    fontWeight:
-                                        FontWeight
-                                            .w600,
-                                  ),
+                            Text(
+                              '${photos.length}',
+                              style:
+                                  const TextStyle(
+                                fontSize: 28,
+                                fontWeight:
+                                    FontWeight
+                                        .w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment
+                                  .end,
+                          children: [
+                            const Text(
+                              'Latest Capture',
+                              style: TextStyle(
+                                color:
+                                    Colors.white70,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 6,
+                            ),
+                            Text(
+                              DateFormat(
+                                'HH:mm',
+                              ).format(
+                                DateTime.parse(
+                                  photos.first
+                                      .timestamp,
                                 ),
-                                SizedBox(
-                                  width: 6,
-                                ),
-                                Icon(
-                                  Icons
-                                      .arrow_forward_ios,
-                                  size: 12,
-                                  color:
-                                      Colors.blue,
-                                ),
-                              ],
+                              ),
+                              style:
+                                  const TextStyle(
+                                fontSize: 28,
+                                fontWeight:
+                                    FontWeight
+                                        .w700,
+                              ),
                             ),
                           ],
                         ),
@@ -280,10 +174,236 @@ class _EvidenceScreenState
                     ],
                   ),
                 ),
-              );
-            },
-          );
-        },
+
+                Expanded(
+                  child: ListView.builder(
+                    physics:
+                        const AlwaysScrollableScrollPhysics(),
+                    padding:
+                        const EdgeInsets.all(
+                      24,
+                    ),
+                    itemCount:
+                        photos.length,
+                    itemBuilder:
+                        (context, index) {
+                      final photo =
+                          photos[index];
+
+                      return InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  PhotoViewerScreen(
+                                photoId:
+                                    photo.id,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          margin:
+                              const EdgeInsets.only(
+                            bottom: 16,
+                          ),
+                          decoration:
+                              BoxDecoration(
+                            color:
+                                const Color(
+                              0xFF111827,
+                            ),
+                            borderRadius:
+                                BorderRadius.circular(
+                              20,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment
+                                    .start,
+                            children: [
+                              ClipRRect(
+                                borderRadius:
+                                    const BorderRadius.only(
+                                  topLeft:
+                                      Radius.circular(
+                                    20,
+                                  ),
+                                  topRight:
+                                      Radius.circular(
+                                    20,
+                                  ),
+                                ),
+                                child:
+                                    CachedNetworkImage(
+                                  imageUrl:
+                                      'http://127.0.0.1:5000/api/evidence/photo/${photo.id}',
+                                  height: 140,
+                                  width:
+                                      double.infinity,
+                                  fit:
+                                      BoxFit.cover,
+                                  errorWidget:
+                                      (
+                                    context,
+                                    url,
+                                    error,
+                                  ) {
+                                    return Container(
+                                      height:
+                                          140,
+                                      color:
+                                          const Color(
+                                        0xFF1F2937,
+                                      ),
+                                      child:
+                                          const Center(
+                                        child:
+                                            Icon(
+                                          Icons
+                                              .image,
+                                          color: Colors
+                                              .white54,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.all(
+                                  20,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment
+                                          .start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons
+                                              .camera_alt,
+                                          color:
+                                              Colors
+                                                  .blue,
+                                        ),
+                                        const SizedBox(
+                                          width:
+                                              10,
+                                        ),
+                                        const Expanded(
+                                          child:
+                                              Text(
+                                            'Screenshot',
+                                            style:
+                                                TextStyle(
+                                              color:
+                                                  Colors.white,
+                                              fontSize:
+                                                  18,
+                                              fontWeight:
+                                                  FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                        if (index ==
+                                            0)
+                                          Container(
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  10,
+                                              vertical:
+                                                  4,
+                                            ),
+                                            decoration:
+                                                BoxDecoration(
+                                              color:
+                                                  Colors.blue,
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                999,
+                                              ),
+                                            ),
+                                            child:
+                                                const Text(
+                                              'LATEST',
+                                              style:
+                                                  TextStyle(
+                                                color:
+                                                    Colors.white,
+                                                fontSize:
+                                                    11,
+                                                fontWeight:
+                                                    FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(
+                                      height: 12,
+                                    ),
+                                    Text(
+                                      DateFormat(
+                                        'dd MMM yyyy • HH:mm',
+                                      ).format(
+                                        DateTime.parse(
+                                          photo.timestamp,
+                                        ),
+                                      ),
+                                      style:
+                                          const TextStyle(
+                                        color: Colors
+                                            .white70,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 12,
+                                    ),
+                                    const Row(
+                                      children: [
+                                        Text(
+                                          'Tap to view',
+                                          style:
+                                              TextStyle(
+                                            color:
+                                                Colors.blue,
+                                            fontWeight:
+                                                FontWeight.w600,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 6,
+                                        ),
+                                        Icon(
+                                          Icons
+                                              .arrow_forward_ios,
+                                          size:
+                                              12,
+                                          color:
+                                              Colors.blue,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

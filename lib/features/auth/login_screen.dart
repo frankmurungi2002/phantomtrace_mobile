@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_colors.dart';
 import '../../services/auth_service.dart';
 import '../../services/token_service.dart';
 import '../dashboard/dashboard_screen.dart';
@@ -8,15 +9,20 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<LoginScreen> createState() =>
+      _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final emailController = TextEditingController(
-    text: 'frankmurungi2002@gmail.com',
+class _LoginScreenState
+    extends State<LoginScreen> {
+  final emailController =
+      TextEditingController(
+    text:
+        'frankmurungi2002@gmail.com',
   );
 
-  final passwordController = TextEditingController(
+  final passwordController =
+      TextEditingController(
     text: 'Uttorent@24',
   );
 
@@ -28,13 +34,15 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final token = await AuthService().login(
+      final token =
+          await AuthService().login(
         emailController.text,
         passwordController.text,
       );
 
       if (token != null) {
-        await TokenService().saveToken(token);
+        await TokenService()
+            .saveToken(token);
       }
 
       if (!mounted) return;
@@ -42,15 +50,25 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => const DashboardScreen(),
+          builder: (_) =>
+              const DashboardScreen(),
         ),
       );
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         SnackBar(
-          content: Text('Error: $e'),
+          backgroundColor:
+              AppColors.surface,
+          content: Text(
+            'Login failed',
+            style: const TextStyle(
+              color:
+                  AppColors.textPrimary,
+            ),
+          ),
         ),
       );
     }
@@ -60,125 +78,154 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  InputDecoration fieldDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(
-        color: Color(0xFF9CA3AF),
-      ),
-      filled: true,
-      fillColor: const Color(0xFF111827),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 20,
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: BorderSide.none,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(
-          color: Color(0xFF374151),
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(
-          color: Color(0xFF2563EB),
-          width: 2,
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0F19),
-      body: Center(
-        child: SizedBox(
-          width: 460,
-          child: Padding(
-            padding: const EdgeInsets.all(40),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'PHANTOMTRACE',
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 3,
-                    color: Colors.white,
+      backgroundColor:
+          AppColors.background,
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints:
+                const BoxConstraints(
+              maxWidth: 420,
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.all(
+                24,
+              ),
+              child: SingleChildScrollView(
+                child: Container(
+                  padding:
+                      const EdgeInsets.all(
+                    28,
                   ),
-                ),
-
-                const SizedBox(height: 12),
-
-                const Text(
-                  'Enterprise Endpoint Security',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white70,
-                  ),
-                ),
-
-                const SizedBox(height: 50),
-
-                TextField(
-                  controller: emailController,
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
-                  decoration: fieldDecoration(
-                    'Email Address',
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
-                  decoration: fieldDecoration(
-                    'Password',
-                  ),
-                ),
-
-                const SizedBox(height: 30),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 58,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          const Color(0xFF2563EB),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(18),
-                      ),
-                    ),
-                    onPressed: loading ? null : login,
-                    child: Text(
-                      loading
-                          ? 'Signing In...'
-                          : 'Sign In',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
+                  decoration:
+                      BoxDecoration(
+                    color:
+                        AppColors.surface,
+                    borderRadius:
+                        BorderRadius.circular(
+                      28,
                     ),
                   ),
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment
+                            .start,
+                    children: [
+                      Text(
+                        'PHANTOMTRACE',
+                        style:
+                            Theme.of(context)
+                                .textTheme
+                                .headlineMedium,
+                      ),
+
+                      const SizedBox(
+                        height: 12,
+                      ),
+
+                      const Text(
+                        'Enterprise Endpoint Security',
+                        style:
+                            TextStyle(
+                          color: AppColors
+                              .textSecondary,
+                          fontSize: 15,
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 40,
+                      ),
+
+                      const Text(
+                        'Email Address',
+                        style:
+                            TextStyle(
+                          color: AppColors
+                              .textSecondary,
+                          fontWeight:
+                              FontWeight.w600,
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 8,
+                      ),
+
+                      TextField(
+                        controller:
+                            emailController,
+                      ),
+
+                      const SizedBox(
+                        height: 20,
+                      ),
+
+                      const Text(
+                        'Password',
+                        style:
+                            TextStyle(
+                          color: AppColors
+                              .textSecondary,
+                          fontWeight:
+                              FontWeight.w600,
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 8,
+                      ),
+
+                      TextField(
+                        controller:
+                            passwordController,
+                        obscureText: true,
+                      ),
+
+                      const SizedBox(
+                        height: 28,
+                      ),
+
+                      SizedBox(
+                        width:
+                            double.infinity,
+                        child:
+                            ElevatedButton(
+                          onPressed:
+                              loading
+                                  ? null
+                                  : login,
+                          child: Text(
+                            loading
+                                ? 'Signing In...'
+                                : 'Sign In',
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 20,
+                      ),
+
+                      const Center(
+                        child: Text(
+                          'Secure Access Portal',
+                          style:
+                              TextStyle(
+                            color: AppColors
+                                .textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
         ),

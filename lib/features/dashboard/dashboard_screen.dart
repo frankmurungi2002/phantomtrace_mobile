@@ -15,7 +15,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState
     extends State<DashboardScreen> {
-
   Future<List<Device>> loadDevices() async {
     final token =
         await TokenService().getToken();
@@ -24,23 +23,28 @@ class _DashboardScreenState
       return [];
     }
 
-    return DeviceService().getDevices(token);
+    return DeviceService().getDevices(
+      token,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor:
+          const Color(0xFF0B0F19),
       body: FutureBuilder<List<Device>>(
         future: loadDevices(),
         builder: (context, snapshot) {
-
           if (!snapshot.hasData) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child:
+                  CircularProgressIndicator(),
             );
           }
 
-          final devices = snapshot.data!;
+          final devices =
+              snapshot.data!;
 
           if (devices.isEmpty) {
             return const Center(
@@ -50,210 +54,308 @@ class _DashboardScreenState
             );
           }
 
-          final device = devices.first;
+          final device =
+              devices.first;
+
+          final onlineCount =
+              devices
+                  .where(
+                    (d) => d.online,
+                  )
+                  .length;
 
           return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(36),
+            child: SingleChildScrollView(
+              padding:
+                  const EdgeInsets.all(
+                24,
+              ),
               child: Column(
                 crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    CrossAxisAlignment
+                        .start,
                 children: [
-
                   const Text(
                     'PHANTOMTRACE',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       letterSpacing: 4,
-                      color: Colors.white70,
+                      color:
+                          Colors.white70,
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(
+                    height: 12,
+                  ),
 
                   const Text(
                     'Security Operations',
                     style: TextStyle(
-                      fontSize: 42,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 34,
+                      fontWeight:
+                          FontWeight.w900,
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(
+                    height: 24,
+                  ),
 
-                  Expanded(
-                    child: Container(
-                      width: double.infinity,
-                      padding:
-                          const EdgeInsets.all(36),
-                      decoration: BoxDecoration(
-                        color:
-                            const Color(0xFF111827),
-                        borderRadius:
-                            BorderRadius.circular(
-                          28,
-                        ),
-                        border: Border.all(
-                          color:
-                              const Color(0xFF1F2937),
-                        ),
+                  Container(
+                    padding:
+                        const EdgeInsets
+                            .all(24),
+                    decoration:
+                        BoxDecoration(
+                      color:
+                          const Color(
+                        0xFF111827,
                       ),
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
-
-                          const Text(
-                            'ACTIVE ENDPOINT',
-                            style: TextStyle(
-                              color:
-                                  Colors.white70,
-                              letterSpacing: 2,
-                            ),
+                      borderRadius:
+                          BorderRadius
+                              .circular(
+                        24,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment
+                                    .start,
+                            children: [
+                              const Text(
+                                'Devices',
+                                style:
+                                    TextStyle(
+                                  color: Colors
+                                      .white70,
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 8,
+                              ),
+                              Text(
+                                '${devices.length}',
+                                style:
+                                    const TextStyle(
+                                  fontSize:
+                                      32,
+                                  fontWeight:
+                                      FontWeight
+                                          .w900,
+                                ),
+                              ),
+                            ],
                           ),
-
-                          const Spacer(),
-
-                          Text(
-                            '${devices.length}',
-                            style: const TextStyle(
-                              fontSize: 120,
-                              height: 1,
-                              fontWeight:
-                                  FontWeight.w900,
-                            ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment
+                                    .center,
+                            children: [
+                              const Text(
+                                'Online',
+                                style:
+                                    TextStyle(
+                                  color: Colors
+                                      .white70,
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 8,
+                              ),
+                              Text(
+                                '$onlineCount',
+                                style:
+                                    const TextStyle(
+                                  fontSize:
+                                      32,
+                                  fontWeight:
+                                      FontWeight
+                                          .w900,
+                                ),
+                              ),
+                            ],
                           ),
-
-                          const Text(
-                            'Protected Devices',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight:
-                                  FontWeight.w600,
-                            ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment
+                                    .end,
+                            children: [
+                              const Text(
+                                'Coverage',
+                                style:
+                                    TextStyle(
+                                  color: Colors
+                                      .white70,
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 8,
+                              ),
+                              const Text(
+                                '100%',
+                                style:
+                                    TextStyle(
+                                  fontSize:
+                                      32,
+                                  fontWeight:
+                                      FontWeight
+                                          .w900,
+                                ),
+                              ),
+                            ],
                           ),
+                        ),
+                      ],
+                    ),
+                  ),
 
-                          const SizedBox(
-                            height: 12,
+                  const SizedBox(
+                    height: 24,
+                  ),
+
+                  Container(
+                    width:
+                        double.infinity,
+                    padding:
+                        const EdgeInsets
+                            .all(28),
+                    decoration:
+                        BoxDecoration(
+                      color:
+                          const Color(
+                        0xFF111827,
+                      ),
+                      borderRadius:
+                          BorderRadius
+                              .circular(
+                        24,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment
+                              .start,
+                      children: [
+                        const Text(
+                          'ACTIVE ENDPOINT',
+                          style:
+                              TextStyle(
+                            color: Colors
+                                .white70,
+                            letterSpacing:
+                                2,
                           ),
+                        ),
 
-                          Text(
-                            'Status: ${device.status}',
-                            style: const TextStyle(
-                              color:
-                                  Colors.white70,
-                            ),
+                        const SizedBox(
+                          height: 24,
+                        ),
+
+                        Text(
+                          device.deviceName,
+                          style:
+                              const TextStyle(
+                            fontSize: 30,
+                            fontWeight:
+                                FontWeight
+                                    .w800,
                           ),
+                        ),
 
-                          const Spacer(),
+                        const SizedBox(
+                          height: 12,
+                        ),
 
-                          InkWell(
-                            borderRadius:
-                                BorderRadius
-                                    .circular(
-                              22,
+                        Row(
+                          children: [
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration:
+                                  BoxDecoration(
+                                color: device
+                                        .online
+                                    ? Colors
+                                        .green
+                                    : Colors
+                                        .orange,
+                                shape: BoxShape
+                                    .circle,
+                              ),
                             ),
-                            onTap: () {
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            Text(
+                              device.online
+                                  ? 'ONLINE'
+                                  : 'OFFLINE',
+                              style:
+                                  TextStyle(
+                                color: device
+                                        .online
+                                    ? Colors
+                                        .green
+                                    : Colors
+                                        .orange,
+                                fontWeight:
+                                    FontWeight
+                                        .w700,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(
+                          height: 12,
+                        ),
+
+                        Text(
+                          'Last Seen: ${device.lastSeen}',
+                          style:
+                              const TextStyle(
+                            color: Colors
+                                .white70,
+                          ),
+                        ),
+
+                        const SizedBox(
+                          height: 24,
+                        ),
+
+                        SizedBox(
+                          width:
+                              double.infinity,
+                          child:
+                              ElevatedButton(
+                            onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) =>
                                       DeviceDetailsScreen(
-deviceId: device.id,
-),
+                                    deviceId:
+                                        device
+                                            .id,
+                                  ),
                                 ),
                               );
                             },
-                            child: Container(
-                              padding:
-                                  const EdgeInsets
-                                      .all(22),
-                              decoration:
-                                  BoxDecoration(
-                                color:
-                                    const Color(
-                                  0xFF0B0F19,
-                                ),
-                                borderRadius:
-                                    BorderRadius
-                                        .circular(
-                                  22,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-
-                                  Icon(
-                                    Icons.computer,
-                                    color: device
-                                            .online
-                                        ? Colors.green
-                                        : Colors.orange,
-                                  ),
-
-                                  const SizedBox(
-                                      width: 14),
-
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment
-                                              .start,
-                                      children: [
-
-                                        Text(
-                                          device
-                                              .deviceName,
-                                          style:
-                                              const TextStyle(
-                                            fontSize:
-                                                18,
-                                            fontWeight:
-                                                FontWeight
-                                                    .w700,
-                                          ),
-                                        ),
-
-                                        const SizedBox(
-                                            height:
-                                                4),
-
-                                        Text(
-                                          device
-                                              .status,
-                                          style:
-                                              const TextStyle(
-                                            color: Colors
-                                                .white70,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  Text(
-                                    device.online
-                                        ? 'ONLINE'
-                                        : 'OFFLINE',
-                                    style:
-                                        TextStyle(
-                                      color: device
-                                              .online
-                                          ? Colors
-                                              .green
-                                          : Colors
-                                              .orange,
-                                      fontWeight:
-                                          FontWeight
-                                              .w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            child:
+                                const Text(
+                              'Open Device',
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
