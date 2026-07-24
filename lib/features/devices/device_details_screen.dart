@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../commands/command_center_screen.dart';
 import '../../models/device_overview.dart';
 import '../../services/device_overview_service.dart';
 import '../../services/token_service.dart';
@@ -115,7 +115,32 @@ class _DeviceDetailsScreenState
                     ),
                   ),
 
-                  const SizedBox(
+const SizedBox(
+  height: 12,
+),
+
+SizedBox(
+  width: double.infinity,
+  child: ElevatedButton(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              CommandCenterScreen(
+            deviceId: widget.deviceId,
+          ),
+        ),
+      );
+    },
+    child: const Text(
+      'Command Center',
+    ),
+  ),
+),
+                
+
+  const SizedBox(
                     height: 30,
                   ),
 
