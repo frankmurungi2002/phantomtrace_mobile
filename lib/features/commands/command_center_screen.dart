@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'command_history_screen.dart';
 import '../../services/command_service.dart';
 import '../../services/token_service.dart';
 
@@ -116,7 +116,28 @@ class CommandCenterScreen extends StatelessWidget {
               context,
               'SCREENSHOT',
               Icons.camera_alt,
-            ),
+            ),const SizedBox(height: 24),
+
+SizedBox(
+  width: double.infinity,
+  child: ElevatedButton.icon(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              CommandHistoryScreen(
+            deviceId: deviceId,
+          ),
+        ),
+      );
+    },
+    icon: const Icon(Icons.history),
+    label: const Text(
+      'Command History',
+    ),
+  ),
+),
           ],
         ),
       ),
