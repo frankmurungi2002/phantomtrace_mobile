@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/evidence_photo.dart';
 import '../../services/evidence_service.dart';
 import '../../services/token_service.dart';
+import 'photo_viewer_screen.dart';
 
 class EvidenceScreen extends StatefulWidget {
   final String deviceId;
@@ -82,67 +83,81 @@ class _EvidenceScreenState
               final photo =
                   photos[index];
 
-              return Container(
-                margin:
-                    const EdgeInsets.only(
-                  bottom: 16,
-                ),
-                padding:
-                    const EdgeInsets.all(
-                  20,
-                ),
-                decoration:
-                    BoxDecoration(
-                  color: const Color(
-                    0xFF111827,
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          PhotoViewerScreen(
+                        photoId:
+                            photo.id,
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  margin:
+                      const EdgeInsets.only(
+                    bottom: 16,
                   ),
-                  borderRadius:
-                      BorderRadius.circular(
+                  padding:
+                      const EdgeInsets.all(
                     20,
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
-                  children: [
+                  decoration:
+                      BoxDecoration(
+                    color: const Color(
+                      0xFF111827,
+                    ),
+                    borderRadius:
+                        BorderRadius.circular(
+                      20,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment
+                            .start,
+                    children: [
 
-                    const Text(
-                      'Screenshot',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight:
-                            FontWeight.w700,
+                      const Text(
+                        'Screenshot',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight:
+                              FontWeight.w700,
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(
-                      height: 8,
-                    ),
-
-                    Text(
-                      photo.timestamp,
-                      style:
-                          const TextStyle(
-                        color:
-                            Colors.white70,
+                      const SizedBox(
+                        height: 8,
                       ),
-                    ),
 
-                    const SizedBox(
-                      height: 8,
-                    ),
-
-                    Text(
-                      photo.id,
-                      style:
-                          const TextStyle(
-                        fontSize: 12,
-                        color:
-                            Colors.white54,
+                      Text(
+                        photo.timestamp,
+                        style:
+                            const TextStyle(
+                          color:
+                              Colors.white70,
+                        ),
                       ),
-                    ),
-                  ],
+
+                      const SizedBox(
+                        height: 8,
+                      ),
+
+                      Text(
+                        photo.id,
+                        style:
+                            const TextStyle(
+                          fontSize: 12,
+                          color:
+                              Colors.white54,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
