@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/device_overview.dart';
 import '../../services/device_overview_service.dart';
 import '../../services/token_service.dart';
+import '../evidence/evidence_screen.dart';
 
 class DeviceDetailsScreen extends StatefulWidget {
   final String deviceId;
@@ -19,7 +20,6 @@ class DeviceDetailsScreen extends StatefulWidget {
 
 class _DeviceDetailsScreenState
     extends State<DeviceDetailsScreen> {
-
   Future<DeviceOverview> loadOverview() async {
     final token =
         await TokenService().getToken();
@@ -45,7 +45,6 @@ class _DeviceDetailsScreenState
       body: FutureBuilder<DeviceOverview>(
         future: loadOverview(),
         builder: (context, snapshot) {
-
           if (!snapshot.hasData) {
             return const Center(
               child:
@@ -64,7 +63,6 @@ class _DeviceDetailsScreenState
                 crossAxisAlignment:
                     CrossAxisAlignment.start,
                 children: [
-
                   const Text(
                     'Device Intelligence',
                     style: TextStyle(
@@ -75,7 +73,8 @@ class _DeviceDetailsScreenState
                   ),
 
                   const SizedBox(
-                      height: 10),
+                    height: 10,
+                  ),
 
                   Text(
                     overview.online
@@ -92,7 +91,33 @@ class _DeviceDetailsScreenState
                   ),
 
                   const SizedBox(
-                      height: 30),
+                    height: 20,
+                  ),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                EvidenceScreen(
+                              deviceId:
+                                  widget.deviceId,
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'View Evidence',
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 30,
+                  ),
 
                   _section(
                     'System',
@@ -117,7 +142,8 @@ class _DeviceDetailsScreenState
                   ),
 
                   const SizedBox(
-                      height: 20),
+                    height: 20,
+                  ),
 
                   _section(
                     'Network',
@@ -134,7 +160,8 @@ class _DeviceDetailsScreenState
                   ),
 
                   const SizedBox(
-                      height: 20),
+                    height: 20,
+                  ),
 
                   _section(
                     'Storage',
@@ -155,7 +182,8 @@ class _DeviceDetailsScreenState
                   ),
 
                   const SizedBox(
-                      height: 20),
+                    height: 20,
+                  ),
 
                   _section(
                     'Activity',
