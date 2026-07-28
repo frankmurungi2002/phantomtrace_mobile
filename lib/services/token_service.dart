@@ -21,4 +21,9 @@ class TokenService {
 
     return prefs.getString(tokenKey);
   }
+
+  Future<void> clearToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(tokenKey);
+  }
 }

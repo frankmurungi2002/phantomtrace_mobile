@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 
 class AuthService {
-  final Dio dio = Dio();
+  final Dio dio = Dio(BaseOptions(
+    validateStatus: (status) => true,
+  ));
 
   Future<String?> login(
     String email,
@@ -15,6 +17,9 @@ class AuthService {
       },
     );
 
-    return response.data['token'];
+    if (response.statusCode == 200) {
+      return response.data['token'];
+    }
+    return null;
   }
 }

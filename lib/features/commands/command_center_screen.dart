@@ -13,31 +13,16 @@ class CommandCenterScreen extends StatelessWidget {
     required this.deviceId,
   });
 
-  Future<void> sendCommand(
-    BuildContext context,
-    String command,
-  ) async {
-    final token =
-        await TokenService().getToken();
-
-    await CommandService().sendCommand(
-      token!,
-      deviceId,
-      command,
-    );
-
+  Future<void> sendCommand(BuildContext context, String command) async {
+    final token = await TokenService().getToken();
+    await CommandService().sendCommand(token!, deviceId, command);
     if (context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor:
-              AppColors.surface,
+          backgroundColor: AppColors.surface,
           content: Text(
             '$command queued',
-            style: const TextStyle(
-              color:
-                  AppColors.textPrimary,
-            ),
+            style: const TextStyle(color: AppColors.textPrimary),
           ),
         ),
       );
@@ -48,92 +33,57 @@ class CommandCenterScreen extends StatelessWidget {
     BuildContext context,
     String title,
     String subtitle,
-    IconData icon,
-  ) {
+    IconData icon, {
+    Color? accentColor,
+  }) {
+    final color = accentColor ?? AppColors.primary;
     return InkWell(
-      borderRadius:
-          BorderRadius.circular(20),
-      onTap: () => sendCommand(
-        context,
-        title,
-      ),
+      borderRadius: BorderRadius.circular(20),
+      onTap: () => sendCommand(context, title),
       child: Container(
-        padding:
-            const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius:
-              BorderRadius.circular(
-            20,
-          ),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
           children: [
             Container(
               width: 52,
               height: 52,
-              decoration:
-                  BoxDecoration(
-                color: AppColors
-                    .primary
-                    .withAlpha(30),
-                borderRadius:
-                    BorderRadius
-                        .circular(
-                  14,
-                ),
+              decoration: BoxDecoration(
+                color: color.withAlpha(30),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(
-                icon,
-                color:
-                    AppColors.primary,
-              ),
+              child: Icon(icon, color: color),
             ),
-
-            const SizedBox(
-              width: 16,
-            ),
-
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style:
-                        const TextStyle(
-                      color: AppColors
-                          .textPrimary,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
                       fontSize: 16,
-                      fontWeight:
-                          FontWeight
-                              .w700,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(
-                    height: 4,
-                  ),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style:
-                        const TextStyle(
-                      color: AppColors
-                          .textSecondary,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
                       fontSize: 13,
                     ),
                   ),
                 ],
               ),
             ),
-
             const Icon(
-              Icons
-                  .arrow_forward_ios,
-              color:
-                  AppColors
-                      .textSecondary,
+              Icons.arrow_forward_ios,
+              color: AppColors.textSecondary,
               size: 14,
             ),
           ],
@@ -145,139 +95,68 @@ class CommandCenterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'Command Center',
-        ),
-      ),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(title: const Text('Command Center')),
       body: SafeArea(
         child: Padding(
-          padding:
-              const EdgeInsets.all(
-            20,
-          ),
+          padding: const EdgeInsets.all(20),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment
-                    .start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
                 'REMOTE OPERATIONS',
                 style: TextStyle(
-                  color: AppColors
-                      .textSecondary,
+                  color: AppColors.textSecondary,
                   letterSpacing: 2,
-                  fontWeight:
-                      FontWeight.w700,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-
-              const SizedBox(
-                height: 10,
-              ),
-
+              const SizedBox(height: 10),
               const Text(
                 'Execute commands on the endpoint.',
-                style: TextStyle(
-                  color: AppColors
-                      .textSecondary,
-                ),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
-
-              const SizedBox(
-                height: 24,
-              ),
-
+              const SizedBox(height: 24),
               Expanded(
                 child: ListView(
                   children: [
+                    commandCard(context, 'PING', 'Check device status', Icons.wifi),
+                    const SizedBox(height: 12),
+                    commandCard(context, 'SYSTEM_INFO', 'Collect system details', Icons.computer),
+                    const SizedBox(height: 12),
+                    commandCard(context, 'GET_NETWORK', 'Retrieve network information', Icons.network_check),
+                    const SizedBox(height: 12),
+                    commandCard(context, 'GET_DISKS', 'Analyze storage usage', Icons.storage),
+                    const SizedBox(height: 12),
+                    commandCard(context, 'GET_PROCESSES', 'Inspect running processes', Icons.memory),
+                    const SizedBox(height: 12),
                     commandCard(
                       context,
-                      'PING',
-                      'Check device status',
-                      Icons.wifi,
+                      'PHOTO',
+                      'Capture thief face via webcam',
+                      Icons.face_retouching_natural,
+                      accentColor: Colors.red,
                     ),
-
-                    const SizedBox(
-                      height: 12,
-                    ),
-
-                    commandCard(
-                      context,
-                      'SYSTEM_INFO',
-                      'Collect system details',
-                      Icons.computer,
-                    ),
-
-                    const SizedBox(
-                      height: 12,
-                    ),
-
-                    commandCard(
-                      context,
-                      'GET_NETWORK',
-                      'Retrieve network information',
-                      Icons.network_check,
-                    ),
-
-                    const SizedBox(
-                      height: 12,
-                    ),
-
-                    commandCard(
-                      context,
-                      'GET_DISKS',
-                      'Analyze storage usage',
-                      Icons.storage,
-                    ),
-
-                    const SizedBox(
-                      height: 12,
-                    ),
-
-                    commandCard(
-                      context,
-                      'GET_PROCESSES',
-                      'Inspect running processes',
-                      Icons.memory,
-                    ),
-
-                    const SizedBox(
-                      height: 12,
-                    ),
-
+                    const SizedBox(height: 12),
                     commandCard(
                       context,
                       'SCREENSHOT',
                       'Capture screen evidence',
-                      Icons.camera_alt,
+                      Icons.screenshot_monitor,
+                      accentColor: Colors.blue,
                     ),
-
-                    const SizedBox(
-                      height: 24,
-                    ),
-
+                    const SizedBox(height: 24),
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) =>
-                                CommandHistoryScreen(
-                              deviceId:
-                                  deviceId,
-                            ),
+                            builder: (_) => CommandHistoryScreen(deviceId: deviceId),
                           ),
                         );
                       },
-                      icon: const Icon(
-                        Icons.history,
-                      ),
-                      label: const Text(
-                        'Command History',
-                      ),
+                      icon: const Icon(Icons.history),
+                      label: const Text('Command History'),
                     ),
                   ],
                 ),
