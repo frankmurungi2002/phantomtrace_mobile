@@ -14,6 +14,7 @@ class DeviceOverview {
   final double? latitude;
   final double? longitude;
   final String city;
+  final String area;
   final String country;
   final String isp;
   final String locationIp;
@@ -34,6 +35,7 @@ class DeviceOverview {
     this.latitude,
     this.longitude,
     required this.city,
+    required this.area,
     required this.country,
     required this.isp,
     required this.locationIp,
@@ -61,6 +63,7 @@ class DeviceOverview {
       latitude: (locationInfo['latitude'] as num?)?.toDouble(),
       longitude: (locationInfo['longitude'] as num?)?.toDouble(),
       city: locationInfo['city'] ?? 'Not reported',
+      area: locationInfo['area'] ?? '',
       country: locationInfo['country'] ?? 'Not reported',
       isp: locationInfo['isp'] ?? 'Not reported',
       locationIp: locationInfo['ip_address'] ?? 'Not reported',

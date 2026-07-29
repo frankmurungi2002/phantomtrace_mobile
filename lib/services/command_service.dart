@@ -9,7 +9,7 @@ class CommandService {
     String commandType,
   ) async {
     await dio.post(
-      'http://127.0.0.1:5000/api/command/send',
+      'http://192.168.1.76:5000/api/command/send',
       data: {
         'device_id': deviceId,
         'command_type': commandType,

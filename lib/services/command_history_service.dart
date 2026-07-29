@@ -10,7 +10,7 @@ class CommandHistoryService {
     String deviceId,
   ) async {
     final response = await dio.get(
-      'http://127.0.0.1:5000/api/command/history/$deviceId',
+      'http://192.168.1.76:5000/api/command/history/$deviceId',
       options: Options(
         headers: {
           'Authorization': 'Bearer $token',

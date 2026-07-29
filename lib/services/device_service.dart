@@ -8,13 +8,11 @@ class DeviceService {
   Future<List<Device>> getDevices(
     String token,
   ) async {
-
     final response = await dio.get(
-      'http://127.0.0.1:5000/api/device/list',
+      'http://192.168.1.76:5000/api/device/list',
       options: Options(
         headers: {
-          'Authorization':
-              'Bearer $token',
+          'Authorization': 'Bearer $token',
         },
       ),
     );

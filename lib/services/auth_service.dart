@@ -1,16 +1,18 @@
 import 'package:dio/dio.dart';
 
 class AuthService {
-  final Dio dio = Dio(BaseOptions(
-    validateStatus: (status) => true,
-  ));
+  final Dio dio = Dio(
+    BaseOptions(
+      validateStatus: (status) => true,
+    ),
+  );
 
   Future<String?> login(
     String email,
     String password,
   ) async {
     final response = await dio.post(
-      'http://127.0.0.1:5000/api/auth/login',
+      'http://192.168.1.76:5000/api/auth/login',
       data: {
         'email': email,
         'password': password,
@@ -20,6 +22,7 @@ class AuthService {
     if (response.statusCode == 200) {
       return response.data['token'];
     }
+
     return null;
   }
 }

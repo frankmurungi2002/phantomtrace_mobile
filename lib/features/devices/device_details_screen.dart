@@ -227,6 +227,8 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
 
                       // Location
                       _section('LOCATION', [
+                        if (_overview!.area.isNotEmpty)
+                          _row('Area', _overview!.area),
                         _row('City', _overview!.city),
                         _row('Country', _overview!.country),
                         _row('ISP', _overview!.isp),

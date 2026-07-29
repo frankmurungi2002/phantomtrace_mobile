@@ -178,7 +178,7 @@ class _EvidenceScreenState extends State<EvidenceScreen>
                     ),
                     child: CachedNetworkImage(
                       imageUrl:
-                          'http://127.0.0.1:5000/api/evidence/photo/${photo.id}',
+                          'http://192.168.1.76:5000/api/evidence/photo/${photo.id}',
                       height: 180,
                       width: double.infinity,
                       fit: BoxFit.cover,
