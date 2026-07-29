@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../services/notification_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/auth_service.dart';
 import '../../services/token_service.dart';
@@ -67,6 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (token != null) {
         await _saveCredentials();
         await TokenService().saveToken(token);
+        await NotificationService.init();
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
