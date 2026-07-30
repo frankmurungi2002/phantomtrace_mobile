@@ -9,7 +9,7 @@ class DeviceService {
     String token,
   ) async {
     final response = await dio.get(
-      'http://192.168.1.76:5000/api/device/list',
+      'http://10.31.49.252:5000/api/device/list',
       options: Options(
         headers: {
           'Authorization': 'Bearer $token',

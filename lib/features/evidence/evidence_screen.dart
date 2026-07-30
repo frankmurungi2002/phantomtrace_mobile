@@ -125,6 +125,46 @@ class _EvidenceScreenState extends State<EvidenceScreen>
     );
   }
 
+
+  Future<void> _deletePhoto(String photoId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF111827),
+        title: const Text('Delete Photo', style: TextStyle(color: Colors.white)),
+        content: const Text('This will permanently delete this evidence. Continue?',
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    try {
+      final token = await TokenService().getToken();
+      await EvidenceService().deletePhoto(token!, photoId);
+      await _loadEvidence();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Evidence deleted'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete')),
+        );
+      }
+    }
+  }
+
   Widget _buildPhotoList(
       List<EvidencePhoto> photos, String label, IconData icon, Color color) {
     if (photos.isEmpty) {
@@ -178,7 +218,7 @@ class _EvidenceScreenState extends State<EvidenceScreen>
                     ),
                     child: CachedNetworkImage(
                       imageUrl:
-                          'http://192.168.1.76:5000/api/evidence/photo/${photo.id}',
+                          'http://10.31.49.252:5000/api/evidence/photo/${photo.id}',
                       height: 180,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -223,6 +263,19 @@ class _EvidenceScreenState extends State<EvidenceScreen>
                               .format(DateTime.parse(photo.timestamp)),
                           style: const TextStyle(
                               color: Colors.white54, fontSize: 13),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () => _deletePhoto(photo.id),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.delete_outline,
+                                color: Colors.red, size: 18),
+                          ),
                         ),
                       ],
                     ),

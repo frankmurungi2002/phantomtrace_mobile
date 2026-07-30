@@ -12,7 +12,7 @@ class AuthService {
     String password,
   ) async {
     final response = await dio.post(
-      'http://192.168.1.76:5000/api/auth/login',
+      'http://10.31.49.252:5000/api/auth/login',
       data: {
         'email': email,
         'password': password,

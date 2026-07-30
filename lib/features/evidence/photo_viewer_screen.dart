@@ -13,7 +13,7 @@ class PhotoViewerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = 'http://192.168.1.76:5000/api/evidence/photo/$photoId';
+    final imageUrl = 'http://10.31.49.252:5000/api/evidence/photo/$photoId';
 
     return Scaffold(
       backgroundColor: Colors.black,

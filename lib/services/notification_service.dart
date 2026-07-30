@@ -25,7 +25,7 @@ class NotificationService {
       final token = await TokenService().getToken();
       if (token == null) return;
       await _dio.post(
-        'http://192.168.1.76:5000/api/auth/fcm-token',
+        'http://10.31.49.252:5000/api/auth/fcm-token',
         data: {'token': fcmToken},
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
