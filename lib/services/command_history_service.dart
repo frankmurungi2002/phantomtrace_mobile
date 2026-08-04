@@ -10,7 +10,7 @@ class CommandHistoryService {
     String deviceId,
   ) async {
     final response = await dio.get(
-      'http://10.31.49.252:5000/api/command/history/$deviceId',
+      'https://phantomtrace-backend-c0if.onrender.com/api/command/history/$deviceId',
       options: Options(
         headers: {
           'Authorization': 'Bearer $token',

@@ -10,7 +10,7 @@ class EvidenceService {
     String deviceId,
   ) async {
     final response = await dio.get(
-      'http://10.31.49.252:5000/api/evidence/photos/$deviceId',
+      'https://phantomtrace-backend-c0if.onrender.com/api/evidence/photos/$deviceId',
       options: Options(
         headers: {
           'Authorization': 'Bearer $token',
@@ -31,7 +31,7 @@ class EvidenceService {
 
   Future<void> deletePhoto(String token, String photoId) async {
     await dio.delete(
-      'http://10.31.49.252:5000/api/evidence/photo/$photoId',
+      'https://phantomtrace-backend-c0if.onrender.com/api/evidence/photo/$photoId',
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
   }

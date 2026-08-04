@@ -12,7 +12,7 @@ class AuthService {
     String password,
   ) async {
     final response = await dio.post(
-      'http://10.31.49.252:5000/api/auth/login',
+      'https://phantomtrace-backend-c0if.onrender.com/api/auth/login',
       data: {
         'email': email,
         'password': password,

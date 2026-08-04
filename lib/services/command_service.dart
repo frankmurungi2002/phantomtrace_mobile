@@ -11,7 +11,7 @@ class CommandService {
     String commandType,
   ) async {
     final response = await dio.post(
-      'http://10.31.49.252:5000/api/command/send',
+      'https://phantomtrace-backend-c0if.onrender.com/api/command/send',
       data: {
         'device_id': deviceId,
         'command_type': commandType,

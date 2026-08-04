@@ -218,7 +218,7 @@ class _EvidenceScreenState extends State<EvidenceScreen>
                     ),
                     child: CachedNetworkImage(
                       imageUrl:
-                          'http://10.31.49.252:5000/api/evidence/photo/${photo.id}',
+                          'https://phantomtrace-backend-c0if.onrender.com/api/evidence/photo/${photo.id}',
                       height: 180,
                       width: double.infinity,
                       fit: BoxFit.cover,

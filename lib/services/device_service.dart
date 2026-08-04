@@ -9,7 +9,7 @@ class DeviceService {
     String token,
   ) async {
     final response = await dio.get(
-      'http://10.31.49.252:5000/api/device/list',
+      'https://phantomtrace-backend-c0if.onrender.com/api/device/list',
       options: Options(
         headers: {
           'Authorization': 'Bearer $token',
