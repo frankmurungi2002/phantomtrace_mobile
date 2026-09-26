@@ -99,10 +99,12 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
   Future<void> _checkStatus() async {
     if (_code == null) return;
     try {
+      // Public endpoint — no JWT needed. The pairing code IS the token.
       final r = await _dio.get(
         '${ApiConstants.baseUrl}/api/device/pair-status/$_code',
-        options: await _auth(),
       );
+      // ignore: avoid_print
+      print('[pair-status] ${r.statusCode} ${r.data}');
       if (r.statusCode == 200 && r.data['paired'] == true) {
         _pollTimer?.cancel();
         _countdownTimer?.cancel();
@@ -114,7 +116,10 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
         await Future.delayed(const Duration(milliseconds: 1400));
         if (mounted) Navigator.pop(context, true);
       }
-    } catch (_) {/* ignore transient errors */}
+    } catch (e) {
+      // ignore: avoid_print
+      print('[pair-status] error: $e');
+    }
   }
 
   String _fmtTime(Duration d) {
