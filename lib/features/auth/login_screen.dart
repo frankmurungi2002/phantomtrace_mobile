@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../services/auth_service.dart';
 import '../../services/token_service.dart';
 import '../dashboard/dashboard_screen.dart';
+import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -210,7 +211,40 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text(loading ? 'Signing In...' : 'Sign In'),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 12),
+
+                      // ── Sign-up route for new users ────────────────────
+                      Center(
+                        child: TextButton(
+                          onPressed: loading ? null : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const SignupScreen(),
+                              ),
+                            );
+                          },
+                          child: RichText(
+                            text: const TextSpan(
+                              text: 'New to PhantomTrace?  ',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 14,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: 'Create an account',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       const Center(
                         child: Text(
                           'Secure Access Portal',

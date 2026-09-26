@@ -5,6 +5,7 @@ import '../../services/device_service.dart';
 import '../../services/token_service.dart';
 import '../auth/login_screen.dart';
 import '../devices/device_details_screen.dart';
+import '../devices/pair_device_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -53,10 +54,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  void _goToRegister() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PairDeviceScreen()),
+    );
+    if (result == true) {
+      setState(() => _loading = true);
+      _loadDevices();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0B0F19),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _goToRegister,
+        backgroundColor: const Color(0xFF1D4ED8),
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text('Add Device',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null ? _buildError()
@@ -89,11 +108,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         const Icon(Icons.devices_other, color: Colors.white24, size: 64),
         const SizedBox(height: 24),
-        const Text('No Devices Found', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
+        const Text('No Devices Yet', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 8),
+        const Text('Tap "Add Device" to protect your first laptop',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white54, fontSize: 14)),
         const SizedBox(height: 32),
         ElevatedButton.icon(
-          onPressed: () { setState(() => _loading = true); _loadDevices(); },
-          icon: const Icon(Icons.refresh), label: const Text('Refresh'),
+          onPressed: _goToRegister,
+          icon: const Icon(Icons.add),
+          label: const Text('Add Device'),
         ),
         const SizedBox(height: 12),
         TextButton(onPressed: _logout, child: const Text('Log Out', style: TextStyle(color: Colors.white38))),
@@ -103,10 +127,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildDashboard() {
     final onlineCount = _devices.where((d) => d.online).length;
+    final stolenCount = _devices.where((d) => d.status == 'STOLEN').length;
 
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -146,7 +171,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Row(children: [
                 Expanded(child: _stat('Devices', '${_devices.length}')),
                 Expanded(child: _stat('Online', '$onlineCount', center: true)),
-                Expanded(child: _stat('Offline', '${_devices.length - onlineCount}', end: true)),
+                Expanded(child: _stat(
+                  stolenCount > 0 ? 'STOLEN' : 'Offline',
+                  stolenCount > 0 ? '$stolenCount' : '${_devices.length - onlineCount}',
+                  end: true,
+                  color: stolenCount > 0 ? Colors.red : null,
+                )),
               ]),
             ),
             const SizedBox(height: 24),
@@ -161,6 +191,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _deviceCard(Device device) {
+    final isStolen = device.status == 'STOLEN';
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Container(
@@ -170,7 +201,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           color: const Color(0xFF111827),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: device.online ? Colors.green.withAlpha(60) : Colors.transparent,
+            color: isStolen
+                ? Colors.red.withOpacity(0.5)
+                : device.online
+                    ? Colors.green.withAlpha(60)
+                    : Colors.transparent,
             width: 1,
           ),
         ),
@@ -182,15 +217,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Container(
                   width: 10, height: 10,
                   decoration: BoxDecoration(
-                    color: device.online ? Colors.green : Colors.orange,
+                    color: isStolen ? Colors.red : device.online ? Colors.green : Colors.orange,
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  device.online ? 'ONLINE' : 'OFFLINE',
+                  isStolen ? 'STOLEN' : device.online ? 'ONLINE' : 'OFFLINE',
                   style: TextStyle(
-                    color: device.online ? Colors.green : Colors.orange,
+                    color: isStolen ? Colors.red : device.online ? Colors.green : Colors.orange,
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
@@ -211,7 +246,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   context,
                   MaterialPageRoute(builder: (_) => DeviceDetailsScreen(deviceId: device.id)),
                 ).then((_) => _loadDevices()),
-                child: const Text('Open Device'),
+                style: isStolen
+                    ? ElevatedButton.styleFrom(backgroundColor: Colors.red.shade800)
+                    : null,
+                child: Text(isStolen ? 'Track Device' : 'Open Device'),
               ),
             ),
           ],
@@ -220,13 +258,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _stat(String label, String value, {bool center = false, bool end = false}) {
+  Widget _stat(String label, String value, {bool center = false, bool end = false, Color? color}) {
     return Column(
       crossAxisAlignment: end ? CrossAxisAlignment.end : center ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white70)),
+        Text(label, style: TextStyle(color: color ?? Colors.white70)),
         const SizedBox(height: 8),
-        Text(value, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900)),
+        Text(value, style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: color)),
       ],
     );
   }
