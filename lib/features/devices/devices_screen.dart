@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/constants/api_constants.dart';
 import '../../models/device.dart';
 import '../../services/device_service.dart';
 import '../../services/token_service.dart';
@@ -159,6 +161,67 @@ class _DevicesScreenState extends State<DevicesScreen> {
     );
   }
 
+  Future<void> _deleteDevice(Device d) async {
+    // Confirm first — irreversible.
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF111827),
+        title: const Text('Delete this device?',
+            style: TextStyle(color: Colors.white)),
+        content: Text(
+          '“${d.deviceName}” will be removed from your account. '
+          'This cannot be undone. The agent on that laptop will stop '
+          'reporting until you pair it again.',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+            child: const Text('DELETE'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+
+    try {
+      final token = await TokenService().getToken();
+      final dio = Dio(BaseOptions(validateStatus: (s) => true));
+      final r = await dio.delete(
+        '${ApiConstants.baseUrl}/api/device/${d.id}',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${d.deviceName} deleted'),
+              backgroundColor: Colors.green.shade800),
+        );
+        await _refresh();
+      } else {
+        final msg = r.data is Map
+            ? (r.data['error'] ?? 'Delete failed')
+            : 'Delete failed';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg.toString()),
+              backgroundColor: Colors.red.shade800),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not reach the server'),
+            backgroundColor: Colors.red),
+      );
+    }
+  }
+
   Widget _deviceTile(Device d) => Container(
     margin: const EdgeInsets.only(bottom: 16),
     padding: const EdgeInsets.all(20),
@@ -184,9 +247,31 @@ class _DevicesScreenState extends State<DevicesScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(d.deviceName,
-                  style: const TextStyle(
-                      fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white)),
+              // Top row: device name (left) + delete icon (extreme right,
+              // on the SAME line as the ONLINE/OFFLINE label just below).
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      d.deviceName,
+                      style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => _deleteDevice(d),
+                    borderRadius: BorderRadius.circular(20),
+                    child: const Padding(
+                      padding: EdgeInsets.all(4),
+                      child: Icon(Icons.delete_outline,
+                          color: Colors.redAccent, size: 22),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 4),
               Text(d.status, style: const TextStyle(color: Colors.white70)),
               const SizedBox(height: 4),
