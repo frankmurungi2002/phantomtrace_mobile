@@ -64,6 +64,31 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
 
+  # Generates every Android launcher-icon size (mdpi..xxxhdpi + adaptive)
+  # and every iOS size from a single 1024x1024 source PNG. Run once with:
+  #   flutter pub run flutter_launcher_icons
+  flutter_launcher_icons: ^0.14.1
+
+# ── App icon (PhantomTrace mark) ─────────────────────────────────────────────
+# Regenerate icons after changing assets/icon/logo.png with:
+#   flutter pub run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/logo.png"
+  min_sdk_android: 21
+  # Android 8+ adaptive icons: background is a solid dark near-black,
+  # foreground is the ghost+radar mark on a transparent canvas.
+  adaptive_icon_background: "#0A0A0A"
+  adaptive_icon_foreground: "assets/icon/logo_foreground.png"
+  # macOS + Windows launcher icons (harmless if we never build for them)
+  windows:
+    generate: true
+    image_path: "assets/icon/logo.png"
+  macos:
+    generate: true
+    image_path: "assets/icon/logo.png"
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -75,10 +100,11 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  # PhantomTrace launcher-icon source PNGs (Flutter bundles them for the
+  # generator + any in-app usage of the mark).
+  assets:
+    - assets/icon/logo.png
+    - assets/icon/logo_foreground.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
