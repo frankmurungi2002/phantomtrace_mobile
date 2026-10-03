@@ -25,8 +25,10 @@ class ReportService {
       options: Options(
         responseType: ResponseType.bytes,
         headers: {'Authorization': 'Bearer $token'},
-        // Fresh capture waits ~25s server-side; give it headroom.
-        receiveTimeout: Duration(seconds: captureFresh ? 60 : 30),
+        // Fresh capture waits up to ~55s server-side (both PHOTO + SCREENSHOT
+        // must arrive from the laptop). We give 75s headroom so the full
+        // wait + the PDF render + the network trip can complete.
+        receiveTimeout: Duration(seconds: captureFresh ? 75 : 30),
       ),
     );
     if (resp.statusCode != 200) {

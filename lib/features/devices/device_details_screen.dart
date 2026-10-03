@@ -107,56 +107,59 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
             ),
           ],
         ),
-        // Buttons rendered as a horizontal row of real buttons (not text
-        // links): equal-height, filled surfaces, with the primary call-to-
-        // action on the right in the brand colour. This reads unambiguously
-        // as a 3-way choice rather than one button plus two text links.
+        // Two-row button layout: Cancel + Use existing on top (secondary
+        // options), then the primary call-to-action "Capture fresh" as its
+        // own full-width button below, so the primary action is both the
+        // most visually prominent AND never has its label clipped by narrow
+        // phones.
         actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
-          Row(children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.pop(context, null),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white70,
-                  side: const BorderSide(color: Colors.white24),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+          Column(mainAxisSize: MainAxisSize.min, children: [
+            Row(children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, null),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white70,
+                    side: const BorderSide(color: Colors.white24),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text('Cancel'),
                 ),
-                child: const Text('Cancel'),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.pop(context, false),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: Colors.white30),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white30),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text('Use existing'),
                 ),
-                child: const Text('Use existing'),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
+            ]),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () => Navigator.pop(context, true),
-                icon: const Icon(Icons.camera_alt, size: 16),
+                icon: const Icon(Icons.camera_alt, size: 18),
                 label: const Text(
                   'Capture fresh',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
                 ),
               ),
             ),
