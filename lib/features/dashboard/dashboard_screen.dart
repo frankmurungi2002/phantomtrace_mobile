@@ -4,6 +4,7 @@ import '../../models/device.dart';
 import '../../services/device_service.dart';
 import '../../services/token_service.dart';
 import '../auth/login_screen.dart';
+import '../auth/emergency_contacts_screen.dart';
 import '../devices/device_details_screen.dart';
 import '../devices/pair_device_screen.dart';
 
@@ -140,6 +141,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 const Text('PHANTOMTRACE',
                     style: TextStyle(fontSize: 13, letterSpacing: 4, color: Colors.white70)),
+                Row(mainAxisSize: MainAxisSize.min, children: [
+                IconButton(
+                  icon: const Icon(Icons.contacts_outlined, color: Colors.white54),
+                  tooltip: 'Emergency contacts',
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const EmergencyContactsScreen(),
+                    ),
+                  ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.logout, color: Colors.white38),
                   tooltip: 'Log Out',
@@ -159,6 +171,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                 ),
+                ]),
               ],
             ),
             const SizedBox(height: 12),

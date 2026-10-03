@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/sighting.dart';
+import '../../services/command_service.dart';
 import '../../services/sighting_service.dart';
 import '../../services/token_service.dart';
 
@@ -33,20 +35,61 @@ class _LocationTrailScreenState extends State<LocationTrailScreen> {
   static final _timeFmt = DateFormat('d MMM, HH:mm');
   static final _dayFmt  = DateFormat('EEE d MMM yyyy');
 
+  // ── Live tracking ──────────────────────────────────────────────────────
+  // When the owner opens this screen we start polling the backend every
+  // 8 seconds for new location points and also kick the agent to send a
+  // fresh fix (via GET_LOCATION) every 25 seconds. The map auto-updates
+  // in place — no manual refresh needed. "Live" badge in the AppBar shows
+  // when streaming is active.
+  Timer? _livePollTimer;
+  Timer? _liveRefreshKickTimer;
+  bool _liveMode = true;   // auto-on when the screen opens
+  DateTime? _lastUpdateAt;
+
   @override
   void initState() {
     super.initState();
     _load();
+    _startLive();
+  }
+
+  void _startLive() {
+    if (!_liveMode) return;
+    _livePollTimer?.cancel();
+    _liveRefreshKickTimer?.cancel();
+    // Pull latest sightings every 8s.
+    _livePollTimer = Timer.periodic(const Duration(seconds: 8), (_) async {
+      await _load(silent: true);
+    });
+    // Kick the agent for a fresh location every 25s so the trail actually
+    // advances in real time (otherwise we'd just re-fetch the same stale row).
+    _liveRefreshKickTimer = Timer.periodic(const Duration(seconds: 25), (_) async {
+      try {
+        final t = await TokenService().getToken();
+        if (t == null) return;
+        await CommandService().sendCommand(t, widget.deviceId, 'GET_LOCATION');
+      } catch (_) {}
+    });
+  }
+
+  void _stopLive() {
+    _livePollTimer?.cancel();
+    _liveRefreshKickTimer?.cancel();
+    _livePollTimer = null;
+    _liveRefreshKickTimer = null;
   }
 
   @override
   void dispose() {
+    _stopLive();
     _map.dispose();
     super.dispose();
   }
 
-  Future<void> _load() async {
-    setState(() { _loading = _points.isEmpty; _error = null; });
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) {
+      setState(() { _loading = _points.isEmpty; _error = null; });
+    }
     try {
       final token = await TokenService().getToken();
       final all = await (widget.service ?? SightingService()).getSightings(token!, widget.deviceId);
@@ -54,10 +97,22 @@ class _LocationTrailScreenState extends State<LocationTrailScreen> {
           .where((s) => !(s.latitude == 0 && s.longitude == 0))
           .toList();
       if (!mounted) return;
-      setState(() { _points = valid; _selected = 0; _loading = false; });
-      _fitAll();
+      // Live mode: if the latest point is new, follow it (keep selection on #0).
+      final hadData = _points.isNotEmpty;
+      setState(() {
+        _points = valid;
+        if (!hadData) _selected = 0;
+        _loading = false;
+        _lastUpdateAt = DateTime.now();
+      });
+      if (!hadData) _fitAll();
+      // In live mode, pan the map smoothly to the newest point.
+      if (_liveMode && _mapReady && _points.isNotEmpty && _selected == 0) {
+        try { _map.move(_ll(_points.first), _map.camera.zoom.clamp(14, 18)); }
+        catch (_) {}
+      }
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted || silent) return;
       setState(() {
         _loading = false;
         _error = 'Could not load the location trail. Check your internet and try again.';
@@ -117,7 +172,54 @@ class _LocationTrailScreenState extends State<LocationTrailScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Location Trail'),
+        title: Row(mainAxisSize: MainAxisSize.min, children: [
+          const Text('Location Trail'),
+          const SizedBox(width: 10),
+          // Live pulse badge — tap to pause/resume live streaming.
+          GestureDetector(
+            onTap: () {
+              setState(() => _liveMode = !_liveMode);
+              if (_liveMode) {
+                _startLive();
+              } else {
+                _stopLive();
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: _liveMode
+                    ? Colors.red.withOpacity(0.18)
+                    : Colors.white10,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: _liveMode
+                      ? Colors.redAccent.withOpacity(0.6)
+                      : Colors.white24,
+                ),
+              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Container(
+                  width: 8, height: 8,
+                  decoration: BoxDecoration(
+                    color: _liveMode ? Colors.redAccent : Colors.white54,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  _liveMode ? 'LIVE' : 'PAUSED',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: _liveMode ? Colors.redAccent : Colors.white54,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ]),
+            ),
+          ),
+        ]),
         actions: [
           if (_points.length > 1)
             IconButton(
@@ -128,7 +230,7 @@ class _LocationTrailScreenState extends State<LocationTrailScreen> {
           IconButton(
             tooltip: 'Refresh',
             icon: const Icon(Icons.refresh_rounded),
-            onPressed: _loading ? null : _load,
+            onPressed: _loading ? null : () => _load(),
           ),
         ],
       ),
