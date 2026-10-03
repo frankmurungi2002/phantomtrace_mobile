@@ -36,7 +36,14 @@ class _SignupScreenState extends State<SignupScreen> {
   static const _termsUrl   = '/terms';
   static const _privacyUrl = '/privacy';
 
-  final Dio _dio = Dio(BaseOptions(validateStatus: (s) => true));
+  // Explicit timeouts so we can distinguish "server is waking up" from
+  // "server rejected the request" from "no internet at all".
+  final Dio _dio = Dio(BaseOptions(
+    validateStatus: (s) => true,
+    connectTimeout: const Duration(seconds: 60),   // Render cold boot ≈ 50s
+    receiveTimeout: const Duration(seconds: 30),
+    sendTimeout: const Duration(seconds: 15),
+  ));
 
   @override
   void initState() {
@@ -92,18 +99,99 @@ class _SignupScreenState extends State<SignupScreen> {
           MaterialPageRoute(builder: (_) => const DashboardScreen()),
         );
       } else {
-        final msg = r.data is Map
-            ? (r.data['error'] ?? r.data['message'] ?? 'Sign up failed.')
-            : 'Sign up failed.';
         if (!mounted) return;
-        setState(() { errorMessage = msg.toString(); loading = false; });
+        setState(() {
+          errorMessage = _friendlyServerError(r);
+          loading = false;
+        });
       }
+    } on DioException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        errorMessage = _friendlyNetworkError(e);
+        loading = false;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        errorMessage = 'Could not reach the server. Check your internet and try again.';
+        errorMessage =
+            'Unexpected error while creating your account.\n($e)';
         loading = false;
       });
+    }
+  }
+
+  /// Converts an HTTP error response into a message the user can act on.
+  /// Covers: duplicate email, missing Terms, bad validation, Render cold
+  /// starts, and bare 5xx errors — always with a concrete next step.
+  String _friendlyServerError(Response r) {
+    final code = r.statusCode ?? 0;
+    // Try to pull the backend's error field; works for Flask's jsonify responses.
+    String? backendMsg;
+    if (r.data is Map) {
+      final m = r.data as Map;
+      backendMsg = (m['error'] ?? m['message'])?.toString();
+    } else if (r.data is String) {
+      final s = r.data as String;
+      // If it's an HTML error page (e.g. Render maintenance), don't dump it.
+      if (!s.startsWith('<')) backendMsg = s;
+    }
+
+    switch (code) {
+      case 400:
+        return backendMsg ??
+            'Some details on the form are not valid. Please check your '
+            'name, email, phone number, and password, then try again.';
+      case 401:
+      case 403:
+        return backendMsg ??
+            'The server refused the sign up ($code). Please try again.';
+      case 409:
+        return backendMsg ??
+            'An account with this email already exists. Try signing in '
+            'instead, or use "Forgot password?" if you cannot remember it.';
+      case 429:
+        return 'Too many attempts. Please wait a minute and try again.';
+      case 500:
+      case 502:
+      case 503:
+      case 504:
+        return 'The server is having a problem right now (error $code). '
+               'Please try again in a few seconds. '
+               '${backendMsg != null ? "\nDetails: $backendMsg" : ""}';
+      default:
+        return backendMsg ??
+            'Sign up failed (error $code). Please try again. '
+            'If the problem persists, contact support.';
+    }
+  }
+
+  /// Converts a Dio network error into a message that explains what the
+  /// user can try. Distinguishes "server waking up", "no internet",
+  /// "server blocked", etc.
+  String _friendlyNetworkError(DioException e) {
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+        return 'The server took too long to respond. If this is your first '
+               'request after a long time, the server may be waking up — '
+               'please try again in 30 seconds.';
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.sendTimeout:
+        return 'The server took too long to answer. Please check your '
+               'internet connection and try again.';
+      case DioExceptionType.connectionError:
+        return 'Could not reach the server. Check your Wi-Fi or mobile data '
+               'and try again. If both are fine, the server may be down.';
+      case DioExceptionType.badCertificate:
+        return 'Secure connection failed. Please update the PhantomTrace '
+               'app from the Play Store.';
+      case DioExceptionType.cancel:
+        return 'Sign up was cancelled.';
+      case DioExceptionType.unknown:
+      default:
+        final msg = e.message ?? '';
+        return 'Could not reach the server. '
+               '${msg.isNotEmpty ? "\nDetails: $msg" : "Please try again."}';
     }
   }
 
