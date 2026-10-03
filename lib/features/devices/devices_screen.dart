@@ -6,6 +6,7 @@ import '../../models/device.dart';
 import '../../services/device_service.dart';
 import '../../services/token_service.dart';
 import 'pair_device_screen.dart';
+import 'bios_setup_screen.dart';
 
 class DevicesScreen extends StatefulWidget {
   const DevicesScreen({super.key});
@@ -275,14 +276,43 @@ class _DevicesScreenState extends State<DevicesScreen> {
               const SizedBox(height: 4),
               Text(d.status, style: const TextStyle(color: Colors.white70)),
               const SizedBox(height: 4),
-              Text(
-                d.online ? 'ONLINE' : 'OFFLINE',
-                style: TextStyle(
-                  color: d.online ? const Color(0xFF22C55E) : Colors.orange,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12,
+              Row(children: [
+                Text(
+                  d.online ? 'ONLINE' : 'OFFLINE',
+                  style: TextStyle(
+                    color: d.online ? const Color(0xFF22C55E) : Colors.orange,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
                 ),
-              ),
+                const SizedBox(width: 10),
+                // Yellow BIOS warning badge — the device isn't protected
+                // against USB boot yet. Tap to open the setup wizard.
+                if (!d.biosProtected)
+                  GestureDetector(
+                    onTap: () => _openBiosSetup(d),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: Colors.amberAccent.withOpacity(0.7)),
+                      ),
+                      child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(Icons.warning_amber_rounded,
+                            color: Colors.amberAccent, size: 12),
+                        SizedBox(width: 4),
+                        Text('BIOS',
+                            style: TextStyle(
+                                color: Colors.amberAccent,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1)),
+                      ]),
+                    ),
+                  ),
+              ]),
             ],
           ),
         ),
@@ -290,4 +320,15 @@ class _DevicesScreenState extends State<DevicesScreen> {
       ],
     ),
   );
+
+  /// Opens the BIOS setup wizard for this device. Called from the yellow
+  /// warning badge in the tile.
+  void _openBiosSetup(Device d) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BiosSetupScreen(deviceId: d.id, deviceName: d.deviceName),
+      ),
+    ).then((_) => _refresh());
+  }
 }
