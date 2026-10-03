@@ -250,13 +250,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     fontSize: 12,
                   ),
                 ),
+                const SizedBox(width: 10),
+                // BIOS protection warning — tap-through handled by the whole
+                // card's Open Device button; here we just signal the status.
+                if (!device.biosProtected)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                          color: Colors.amberAccent.withOpacity(0.7)),
+                    ),
+                    child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(Icons.warning_amber_rounded,
+                          color: Colors.amberAccent, size: 12),
+                      SizedBox(width: 4),
+                      Text('BIOS',
+                          style: TextStyle(
+                              color: Colors.amberAccent,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1)),
+                    ]),
+                  ),
               ],
             ),
             const SizedBox(height: 12),
             Text(device.deviceName,
                 style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
             const SizedBox(height: 8),
-            Text('Last Seen: ${device.lastSeen}',
+            Text('Last seen: ${_humanizeLastSeen(device.lastSeen)}',
                 style: const TextStyle(color: Colors.white54, fontSize: 12)),
             const SizedBox(height: 20),
             SizedBox(
@@ -276,6 +300,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
     );
+  }
+
+  /// Turn a raw ISO timestamp like "2026-10-03T16:54:09.973067" into
+  /// something a human reads at a glance: "just now", "5 min ago",
+  /// "2 hours ago", "3 days ago". Falls back to the original string if
+  /// parsing fails so we never crash the card over a bad timestamp.
+  String _humanizeLastSeen(String s) {
+    if (s.isEmpty) return 'unknown';
+    try {
+      final t = DateTime.tryParse(s)?.toUtc();
+      if (t == null) return s;
+      final now = DateTime.now().toUtc();
+      final diff = now.difference(t);
+      if (diff.inSeconds < 10)   return 'just now';
+      if (diff.inSeconds < 60)   return '${diff.inSeconds} sec ago';
+      if (diff.inMinutes < 60)   return '${diff.inMinutes} min ago';
+      if (diff.inHours   < 24)   return '${diff.inHours} h ago';
+      if (diff.inDays    < 7)    return '${diff.inDays} d ago';
+      return '${(diff.inDays / 7).floor()} w ago';
+    } catch (_) {
+      return s;
+    }
   }
 
   Widget _stat(String label, String value, {bool center = false, bool end = false, Color? color}) {

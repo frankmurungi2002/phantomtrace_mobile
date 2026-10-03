@@ -362,77 +362,82 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      // Status card
+                      // ── Compact device identity card ────────────────────
+                      // Rows condensed into one bar: laptop icon + hostname
+                      // (truncated if too long) + edit pencil, with the
+                      // online/stolen pill on the right. Half the vertical
+                      // footprint of the old card, feels premium.
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.fromLTRB(16, 14, 10, 14),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(18),
                           border: isStolen
                               ? Border.all(
-                                  color: Colors.red.withOpacity(0.5), width: 1.5)
+                                  color: Colors.red.withOpacity(0.5), width: 1.3)
                               : null,
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('DEVICE INTELLIGENCE',
-                                style: TextStyle(
-                                    color: AppColors.textSecondary,
-                                    letterSpacing: 2,
-                                    fontWeight: FontWeight.w700)),
-                            const SizedBox(height: 16),
-                            Row(children: [
-                              Expanded(
-                                child: Text(_overview!.hostname,
-                                    style: const TextStyle(
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.w800,
-                                        color: AppColors.textPrimary)),
-                              ),
-                              IconButton(
-                                tooltip: 'Rename this device',
-                                icon: const Icon(Icons.edit_outlined,
-                                    color: Colors.white54, size: 20),
-                                onPressed: _renameDevice,
-                              ),
-                            ]),
-                            const SizedBox(height: 12),
-                            Row(children: [
-                              Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: isStolen
+                        child: Row(children: [
+                          Container(
+                            width: 44, height: 44,
+                            decoration: BoxDecoration(
+                              color: (isStolen
                                       ? Colors.red
                                       : _overview!.online
                                           ? AppColors.success
-                                          : AppColors.warning,
-                                  shape: BoxShape.circle,
+                                          : AppColors.warning)
+                                  .withOpacity(0.18),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              isStolen ? Icons.gpp_bad_rounded : Icons.laptop_mac,
+                              color: isStolen
+                                  ? Colors.red
+                                  : _overview!.online
+                                      ? AppColors.success
+                                      : AppColors.warning,
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _overview!.hostname,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.textPrimary),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                isStolen
-                                    ? 'STOLEN'
-                                    : _overview!.online ? 'ONLINE' : 'OFFLINE',
-                                style: TextStyle(
-                                  color: isStolen
-                                      ? Colors.red
-                                      : _overview!.online
-                                          ? AppColors.success
-                                          : AppColors.warning,
-                                  fontWeight: FontWeight.w700,
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Tap pencil to rename',
+                                  style: TextStyle(
+                                      color: Colors.white.withOpacity(0.4),
+                                      fontSize: 11),
                                 ),
-                              ),
-                            ]),
-                          ],
-                        ),
+                              ],
+                            ),
+                          ),
+                          _statusPill(isStolen: isStolen,
+                              online: _overview!.online),
+                          IconButton(
+                            tooltip: 'Rename this device',
+                            icon: const Icon(Icons.edit_outlined,
+                                color: Colors.white54, size: 18),
+                            onPressed: _renameDevice,
+                          ),
+                        ]),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
 
-                      // Mark Stolen / Mark Found
+                      // Mark Stolen / Mark Found — single tap, high stakes.
+                      // Lower padding, matched height with the other primary
+                      // buttons on the page for a consistent rhythm.
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
@@ -441,28 +446,31 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
                                 ? Colors.green.shade800
                                 : Colors.red.shade900,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
+                                borderRadius: BorderRadius.circular(14)),
                           ),
                           onPressed: _updatingStatus ? null : _toggleStolenStatus,
                           icon: _updatingStatus
                               ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
+                                  width: 18, height: 18,
                                   child: CircularProgressIndicator(
                                       strokeWidth: 2, color: Colors.white))
                               : Icon(isStolen
                                   ? Icons.check_circle_outline
-                                  : Icons.report_problem_outlined),
-                          label: Text(_updatingStatus
-                              ? 'Updating...'
-                              : isStolen
-                                  ? 'Mark as Found'
-                                  : 'Mark as Stolen'),
+                                  : Icons.report_problem_outlined, size: 20),
+                          label: Text(
+                            _updatingStatus
+                                ? 'Updating...'
+                                : isStolen
+                                    ? 'Mark as Found'
+                                    : 'Mark as Stolen',
+                            style: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w800),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
 
                       // (Lock Device moved to Command Center — kept in one place only)
                       // Evidence + Commands
@@ -612,6 +620,36 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
                     ],
                   ),
                 ),
+    );
+  }
+
+  /// Small pill showing ONLINE / OFFLINE / STOLEN with a dot. Used in the
+  /// compact Device Intelligence header.
+  Widget _statusPill({required bool isStolen, required bool online}) {
+    final color = isStolen
+        ? Colors.red
+        : online ? AppColors.success : AppColors.warning;
+    final label = isStolen ? 'STOLEN' : online ? 'ONLINE' : 'OFFLINE';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.45)),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Container(
+          width: 7, height: 7,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(label, style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w800,
+          fontSize: 11,
+          letterSpacing: 1.1,
+        )),
+      ]),
     );
   }
 

@@ -69,10 +69,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: TextStyle(color: Colors.white54, fontSize: 12),
           ),
         ]),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Save')),
-        ],
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [_twinActions(
+          ctx,
+          onCancel: () => Navigator.pop(ctx, false),
+          onSave:   () => Navigator.pop(ctx, true),
+        )],
       ),
     );
     if (ok != true) return;
@@ -122,10 +124,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const Text('Show passwords', style: TextStyle(color: Colors.white70)),
             ]),
           ]),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-            ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Save')),
-          ],
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          actions: [_twinActions(
+            ctx,
+            onCancel: () => Navigator.pop(ctx, false),
+            onSave:   () => Navigator.pop(ctx, true),
+          )],
         );
       }),
     );
@@ -246,6 +250,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
           hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
         ),
       );
+
+  /// Two matched dialog action buttons: Cancel (outlined, white) +
+  /// Save (filled, brand red). Same height, same width via Expanded.
+  /// Replaces the Material default where TextButton+ElevatedButton render
+  /// at different sizes and visually imbalanced.
+  Widget _twinActions(BuildContext ctx,
+      {required VoidCallback onCancel, required VoidCallback onSave,
+       String saveLabel = 'Save'}) {
+    return Row(children: [
+      Expanded(
+        child: OutlinedButton(
+          onPressed: onCancel,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.white70,
+            side: const BorderSide(color: Colors.white24),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+          child: const Text('Cancel',
+              style: TextStyle(fontWeight: FontWeight.w700)),
+        ),
+      ),
+      const SizedBox(width: 10),
+      Expanded(
+        child: ElevatedButton(
+          onPressed: onSave,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+          child: Text(saveLabel,
+              style: const TextStyle(
+                  fontSize: 15, fontWeight: FontWeight.w800)),
+        ),
+      ),
+    ]);
+  }
 
   void _snack(String msg) {
     if (!mounted) return;
