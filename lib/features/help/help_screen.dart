@@ -21,7 +21,7 @@ class _HelpScreenState extends State<HelpScreen> {
   // sees content immediately on arrival rather than a wall of titles.
   final Set<int> _open = {0};
 
-  static const _supportEmail = 'mywatchhhh@gmail.com';
+  static const _supportEmail = 'phantomtracealerts@gmail.com';
 
   // ── Content model ──────────────────────────────────────────────────────
   List<_Section> _sections() => [
