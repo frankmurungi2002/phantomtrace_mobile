@@ -152,7 +152,6 @@ class _CommandCenterScreenState extends State<CommandCenterScreen> {
               Expanded(
                 child: ListView(
                   children: [
-                    commandCard('PING', 'Check device is alive', Icons.wifi),
                     commandCard('SYSTEM_INFO', 'Collect system details', Icons.computer),
                     commandCard('GET_NETWORK', 'Retrieve network information', Icons.network_check),
                     commandCard('GET_DISKS', 'Analyze storage usage', Icons.storage),
@@ -168,6 +167,10 @@ class _CommandCenterScreenState extends State<CommandCenterScreen> {
                         Icons.volume_up, accentColor: Colors.red),
                     commandCard('STOP_ALARM', 'Stop the alarm',
                         Icons.volume_off, accentColor: Colors.green),
+                    commandCard('SECURE_DATA', 'Encrypt my files (lock out thief)',
+                        Icons.enhanced_encryption, accentColor: Colors.purple),
+                    commandCard('RESTORE_DATA', 'Decrypt my files (restore access)',
+                        Icons.lock_open, accentColor: Colors.green),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
                       onPressed: () => Navigator.push(
