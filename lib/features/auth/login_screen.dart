@@ -121,9 +121,17 @@ class _LoginScreenState extends State<LoginScreen> {
       await _tokens.saveToken(token);
       await NotificationService.init();
 
-      // Offer to turn on biometric sign-in the FIRST time we get a token,
-      // if the phone supports it and the user hasn't already opted in.
-      if (_biometricAvailable && !(await _tokens.isBiometricEnabled())) {
+      // Offer to turn on biometric sign-in — but ONLY if:
+      //   • the phone has biometric hardware enrolled,
+      //   • biometric isn't already enabled on this install, AND
+      //   • the user hasn't previously said "Not now" (we stop nagging).
+      // "Not now" is remembered forever on this device so we don't harass
+      // the user every login; they can turn it on from Settings later.
+      final prefs = await SharedPreferences.getInstance();
+      final alreadyDeclined = prefs.getBool('bio_offer_declined') ?? false;
+      if (_biometricAvailable
+          && !(await _tokens.isBiometricEnabled())
+          && !alreadyDeclined) {
         await _maybeOfferBiometric(token, email);
       }
 
@@ -148,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
             style: TextStyle(color: Colors.white)),
         content: const Text(
           'You can skip typing your password every time by using your '
-          'fingerprint. Your credentials stay in the phone\'s secure enclave.',
+          "fingerprint. Your credentials stay in the phone's secure enclave.",
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -161,12 +169,38 @@ class _LoginScreenState extends State<LoginScreen> {
         ],
       ),
     );
-    if (ok == true) {
-      // Verify once so we know biometrics really work on this device
-      final auth = await _bio.authenticate(reason: 'Confirm fingerprint to enable sign-in');
-      if (auth) {
-        await _tokens.enableBiometric(token: token, email: email);
-      }
+
+    // Remember the user's choice either way — we don't nag again on next login.
+    final prefs = await SharedPreferences.getInstance();
+
+    if (ok != true) {
+      await prefs.setBool('bio_offer_declined', true);
+      return;
+    }
+
+    // Fire the OS fingerprint sheet. If this doesn't trigger the sheet,
+    // the native side isn't set up correctly (manifest permission or
+    // FlutterFragmentActivity missing) — surface a loud message so we see it.
+    final auth = await _bio.authenticate(
+        reason: 'Confirm fingerprint to enable sign-in');
+    if (!mounted) return;
+    if (auth) {
+      await _tokens.enableBiometric(token: token, email: email);
+      // Mark as "handled" — if the user later disables, the offer stays off.
+      await prefs.setBool('bio_offer_declined', true);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        backgroundColor: Colors.green,
+        content: Text('Fingerprint sign-in enabled.'),
+      ));
+      setState(() => _biometricEnrolled = true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        backgroundColor: Colors.orange,
+        content: Text(
+          'Fingerprint check did not succeed. '
+          'Make sure a fingerprint is enrolled in your phone settings.',
+        ),
+      ));
     }
   }
 
