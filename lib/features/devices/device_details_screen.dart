@@ -66,7 +66,16 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
       final token = await TokenService().getToken();
       final overview =
           await DeviceOverviewService().getOverview(token!, widget.deviceId);
-      if (mounted) setState(() { _overview = overview; _loading = false; });
+      if (mounted) setState(() {
+        _overview = overview;
+        // IMPORTANT: sync _status from the server too. Otherwise if the
+        // user marks the device stolen, backs out, re-enters, our _status
+        // is reset from widget.initialStatus (which was passed in as 'SAFE')
+        // and the button stubbornly shows "Mark as Stolen" even though the
+        // backend knows it's STOLEN.
+        if (overview.status.isNotEmpty) _status = overview.status;
+        _loading = false;
+      });
     } catch (e) {
       if (mounted) setState(() => _loading = false);
     }
@@ -362,11 +371,11 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      // ── Compact device identity card ────────────────────
-                      // Rows condensed into one bar: laptop icon + hostname
-                      // (truncated if too long) + edit pencil, with the
-                      // online/stolen pill on the right. Half the vertical
-                      // footprint of the old card, feels premium.
+                      // ── Device identity card ────────────────────────────
+                      // Hostname sits on its own line so it NEVER truncates,
+                      // with a small status pill underneath. Icon on the
+                      // left, rename pencil docked to the right of the
+                      // hostname. Compact but readable.
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.fromLTRB(16, 14, 10, 14),
@@ -378,60 +387,71 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
                                   color: Colors.red.withOpacity(0.5), width: 1.3)
                               : null,
                         ),
-                        child: Row(children: [
-                          Container(
-                            width: 44, height: 44,
-                            decoration: BoxDecoration(
-                              color: (isStolen
-                                      ? Colors.red
-                                      : _overview!.online
-                                          ? AppColors.success
-                                          : AppColors.warning)
-                                  .withOpacity(0.18),
-                              borderRadius: BorderRadius.circular(12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 44, height: 44,
+                              decoration: BoxDecoration(
+                                color: (isStolen
+                                        ? Colors.red
+                                        : _overview!.online
+                                            ? AppColors.success
+                                            : AppColors.warning)
+                                    .withOpacity(0.18),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                isStolen ? Icons.gpp_bad_rounded : Icons.laptop_mac,
+                                color: isStolen
+                                    ? Colors.red
+                                    : _overview!.online
+                                        ? AppColors.success
+                                        : AppColors.warning,
+                                size: 22,
+                              ),
                             ),
-                            child: Icon(
-                              isStolen ? Icons.gpp_bad_rounded : Icons.laptop_mac,
-                              color: isStolen
-                                  ? Colors.red
-                                  : _overview!.online
-                                      ? AppColors.success
-                                      : AppColors.warning,
-                              size: 22,
+                            const SizedBox(width: 12),
+                            // Hostname row + status pill underneath.
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(children: [
+                                    Expanded(
+                                      child: Text(
+                                        _overview!.hostname,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w800,
+                                            height: 1.15,
+                                            color: AppColors.textPrimary),
+                                      ),
+                                    ),
+                                    // Pencil kept inline so it's always next
+                                    // to the name it edits.
+                                    IconButton(
+                                      visualDensity: VisualDensity.compact,
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(
+                                          minWidth: 32, minHeight: 32),
+                                      tooltip: 'Rename this device',
+                                      icon: const Icon(Icons.edit_outlined,
+                                          color: Colors.white54, size: 18),
+                                      onPressed: _renameDevice,
+                                    ),
+                                  ]),
+                                  const SizedBox(height: 6),
+                                  _statusPill(isStolen: isStolen,
+                                      online: _overview!.online),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _overview!.hostname,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w800,
-                                      color: AppColors.textPrimary),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Tap pencil to rename',
-                                  style: TextStyle(
-                                      color: Colors.white.withOpacity(0.4),
-                                      fontSize: 11),
-                                ),
-                              ],
-                            ),
-                          ),
-                          _statusPill(isStolen: isStolen,
-                              online: _overview!.online),
-                          IconButton(
-                            tooltip: 'Rename this device',
-                            icon: const Icon(Icons.edit_outlined,
-                                color: Colors.white54, size: 18),
-                            onPressed: _renameDevice,
-                          ),
-                        ]),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 14),
 

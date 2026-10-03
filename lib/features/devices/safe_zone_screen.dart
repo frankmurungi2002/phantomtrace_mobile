@@ -190,12 +190,31 @@ class _SafeZoneScreenState extends State<SafeZoneScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  // Make "Clear Safe Zone" look like an actual button —
+                  // bordered, bold label, clear tap target. Before it was
+                  // just coloured text that users didn't recognise as
+                  // tappable.
                   SizedBox(
                     width: double.infinity,
-                    child: TextButton(
+                    child: OutlinedButton.icon(
                       onPressed: _saving ? null : () => _save(clear: true),
-                      child: const Text('Clear Safe Zone',
-                          style: TextStyle(color: AppColors.textSecondary)),
+                      icon: const Icon(Icons.delete_outline,
+                          color: Colors.redAccent),
+                      label: const Text(
+                        'Clear Safe Zone',
+                        style: TextStyle(
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                            color: Colors.redAccent.withOpacity(0.6)),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                      ),
                     ),
                   ),
                 ],

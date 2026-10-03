@@ -1,4 +1,8 @@
 class DeviceOverview {
+  /// Device status as seen by the backend: 'SAFE' or 'STOLEN'. The
+  /// Device Overview screen uses this to decide whether to show
+  /// "Mark as Stolen" (red) or "Mark as Found" (green).
+  final String status;
   final bool online;
   final int processCount;
   final int commandCount;
@@ -20,6 +24,7 @@ class DeviceOverview {
   final String locationIp;
 
   DeviceOverview({
+    this.status = '',
     required this.online,
     required this.processCount,
     required this.commandCount,
@@ -47,7 +52,11 @@ class DeviceOverview {
     final diskInfo = json['disk_info'] as Map<String, dynamic>? ?? {};
     final locationInfo = json['location_info'] as Map<String, dynamic>? ?? {};
 
+    // If the backend didn't include a `status` field, leave it as empty
+    // so the UI knows "no server-authoritative status in this payload"
+    // and doesn't overwrite the current local status.
     return DeviceOverview(
+      status: (json['status'] ?? '').toString(),
       online: json['online'] ?? false,
       processCount: json['process_count'] ?? 0,
       commandCount: json['command_count'] ?? 0,

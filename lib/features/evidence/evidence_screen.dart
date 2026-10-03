@@ -259,8 +259,10 @@ class _EvidenceScreenState extends State<EvidenceScreen>
                           ),
                         const SizedBox(width: 8),
                         Text(
-                          DateFormat('dd MMM • HH:mm')
-                              .format(DateTime.parse(photo.timestamp)),
+                          // Backend stores UTC. Convert to local time so
+                          // Ugandan users (UTC+3) see 20:00 not 17:00.
+                          DateFormat('dd MMM • HH:mm').format(
+                              DateTime.parse(photo.timestamp).toLocal()),
                           style: const TextStyle(
                               color: Colors.white54, fontSize: 13),
                         ),
