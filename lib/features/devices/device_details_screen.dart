@@ -73,10 +73,115 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
   }
 
   Future<void> _generateReport() async {
+    // Three choices — the user explicitly picks whether to capture fresh
+    // evidence (slow, needs device online) or use what's already stored
+    // (fast, might be stale). Cancel exits cleanly.
+    //   returns: null (cancel) | true (capture fresh) | false (use existing)
+    final choice = await showDialog<bool?>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF111827),
+        title: const Text('Recovery Report',
+            style: TextStyle(color: Colors.white)),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'The report shows the latest 2 webcam shots and 2 screenshots. '
+              'Choose how to prepare the evidence:',
+              style: TextStyle(color: Colors.white70),
+            ),
+            SizedBox(height: 12),
+            Text(
+              '• Capture fresh: the agent takes a brand-new photo + '
+              'screenshot right now (needs the device online — takes ~30s).',
+              style: TextStyle(color: Colors.white60, fontSize: 13),
+            ),
+            SizedBox(height: 6),
+            Text(
+              '• Use existing: builds the report immediately from the latest '
+              'images already stored for this device.',
+              style: TextStyle(color: Colors.white60, fontSize: 13),
+            ),
+          ],
+        ),
+        // Buttons rendered as a horizontal row of real buttons (not text
+        // links): equal-height, filled surfaces, with the primary call-to-
+        // action on the right in the brand colour. This reads unambiguously
+        // as a 3-way choice rather than one button plus two text links.
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          Row(children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context, null),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white70,
+                  side: const BorderSide(color: Colors.white24),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('Cancel'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context, false),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.white30),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('Use existing'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: () => Navigator.pop(context, true),
+                icon: const Icon(Icons.camera_alt, size: 16),
+                label: const Text(
+                  'Capture fresh',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ]),
+        ],
+      ),
+    );
+    if (choice == null) return;
+
+    final captureFresh = choice;
     setState(() => _generatingReport = true);
+    if (mounted && captureFresh) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        duration: Duration(seconds: 4),
+        content: Text(
+          'Capturing fresh evidence from the device — this takes about 30 seconds…',
+        ),
+      ));
+    }
     try {
       await ReportService().downloadAndShare(
-          widget.deviceId, _overview?.hostname ?? 'device');
+        widget.deviceId,
+        _overview?.hostname ?? 'device',
+        captureFresh: captureFresh,
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

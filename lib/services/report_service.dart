@@ -10,13 +10,23 @@ import 'token_service.dart';
 class ReportService {
   final Dio _dio = Dio(BaseOptions(validateStatus: (s) => true));
 
-  Future<void> downloadAndShare(String deviceId, String deviceName) async {
+  /// Downloads the recovery PDF and opens the share sheet.
+  /// If [captureFresh] is true, the backend will first ask the agent to take
+  /// a brand-new webcam shot + screenshot and wait for them to arrive, so the
+  /// PDF contains images from "right now" rather than old test captures. This
+  /// call can take 25-30 seconds in that mode — the UI should show progress.
+  Future<void> downloadAndShare(String deviceId, String deviceName,
+      {bool captureFresh = false}) async {
     final token = await TokenService().getToken();
+    final url = '${ApiConstants.baseUrl}/api/device/$deviceId/report'
+        '${captureFresh ? "?capture_fresh=1" : ""}';
     final resp = await _dio.get(
-      '${ApiConstants.baseUrl}/api/device/$deviceId/report',
+      url,
       options: Options(
         responseType: ResponseType.bytes,
         headers: {'Authorization': 'Bearer $token'},
+        // Fresh capture waits ~25s server-side; give it headroom.
+        receiveTimeout: Duration(seconds: captureFresh ? 60 : 30),
       ),
     );
     if (resp.statusCode != 200) {

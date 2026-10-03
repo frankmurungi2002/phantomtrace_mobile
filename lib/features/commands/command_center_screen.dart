@@ -152,11 +152,12 @@ class _CommandCenterScreenState extends State<CommandCenterScreen> {
               Expanded(
                 child: ListView(
                   children: [
-                    commandCard('SYSTEM_INFO', 'Collect system details', Icons.computer),
-                    commandCard('GET_NETWORK', 'Retrieve network information', Icons.network_check),
-                    commandCard('GET_DISKS', 'Analyze storage usage', Icons.storage),
-                    commandCard('GET_PROCESSES', 'Inspect running processes', Icons.memory),
-                    commandCard('GET_LOCATION', 'Get current location', Icons.location_on),
+                    // ─── RECOVERY & EVIDENCE (daily tools) ────────────
+                    // Only the commands that TAKE AN ACTION on the device.
+                    // Diagnostics (SYSTEM_INFO, GET_NETWORK, GET_DISKS,
+                    // GET_PROCESSES) are already shown on Device Overview
+                    // which auto-refreshes every 5s — exposing them again
+                    // here would be noise.
                     commandCard('PHOTO', 'Capture thief face via webcam',
                         Icons.face_retouching_natural, accentColor: Colors.red),
                     commandCard('SCREENSHOT', 'Capture screen evidence',
@@ -167,6 +168,9 @@ class _CommandCenterScreenState extends State<CommandCenterScreen> {
                         Icons.volume_up, accentColor: Colors.red),
                     commandCard('STOP_ALARM', 'Stop the alarm',
                         Icons.volume_off, accentColor: Colors.green),
+                    commandCard('GET_LOCATION',
+                        'Force a fresh location fix (useful if the device moved)',
+                        Icons.location_on, accentColor: Colors.cyan),
                     commandCard('SECURE_DATA', 'Encrypt my files (lock out thief)',
                         Icons.enhanced_encryption, accentColor: Colors.purple),
                     commandCard('RESTORE_DATA', 'Decrypt my files (restore access)',
