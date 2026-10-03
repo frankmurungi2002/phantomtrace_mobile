@@ -295,33 +295,9 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
                                   : 'Mark as Stolen'),
                         ),
                       ),
-                      const SizedBox(height: 12),
-
-                      // Lock button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red.shade800,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
-                          ),
-                          onPressed: _locking ? null : _lockDevice,
-                          icon: _locking
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.white))
-                              : const Icon(Icons.lock),
-                          label:
-                              Text(_locking ? 'Sending Lock...' : 'Lock Device'),
-                        ),
-                      ),
                       const SizedBox(height: 16),
 
+                      // (Lock Device moved to Command Center — kept in one place only)
                       // Evidence + Commands
                       Row(children: [
                         Expanded(

@@ -105,12 +105,15 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
       );
       // ignore: avoid_print
       print('[pair-status] ${r.statusCode} ${r.data}');
-      if (r.statusCode == 200 && r.data['paired'] == true) {
+      // Accept any truthy spelling the backend might return — true, "true", 1, "1"
+      final raw = r.data is Map ? r.data['paired'] : null;
+      final isPaired = raw == true || raw == 'true' || raw == 1 || raw == '1';
+      if (r.statusCode == 200 && isPaired) {
         _pollTimer?.cancel();
         _countdownTimer?.cancel();
         setState(() {
           _paired = true;
-          _pairedDeviceId = r.data['device_id'];
+          _pairedDeviceId = (r.data is Map ? r.data['device_id'] : null)?.toString();
         });
         // Small delay so the user sees the success state
         await Future.delayed(const Duration(milliseconds: 1400));
@@ -120,6 +123,30 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
       // ignore: avoid_print
       print('[pair-status] error: $e');
     }
+  }
+
+  /// Manual fallback the user can hit if auto-polling misses the flip.
+  /// Immediately checks pair-status and, if paired, pops back; otherwise
+  /// shows a short "still waiting" snackbar.
+  Future<void> _checkNow() async {
+    await _checkStatus();
+    if (_paired) return; // _checkStatus already popped
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        duration: Duration(seconds: 2),
+        content: Text('Not paired yet. If the laptop shows "Paired", '
+            'tap "Done — I\'ve paired" below.'),
+      ));
+    }
+  }
+
+  /// Hard-exit the pairing screen. Useful when the user is sure the laptop
+  /// is linked (the backend may have accepted it) but polling is stuck.
+  /// Pops true so the devices list refreshes.
+  void _doneManually() {
+    _pollTimer?.cancel();
+    _countdownTimer?.cancel();
+    Navigator.pop(context, true);
   }
 
   String _fmtTime(Duration d) {
@@ -321,6 +348,38 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
           ]),
         ),
         const SizedBox(height: 16),
+
+        // Manual re-check — polling can miss the first flip if the network
+        // hiccups or the device-list refresh fires at the wrong moment.
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _checkNow,
+            icon: const Icon(Icons.sync),
+            label: const Text("I've paired — check now"),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Colors.white24),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        // Hard-exit if the user has already seen the laptop online elsewhere
+        // in the app but this screen is stuck on "waiting".
+        SizedBox(
+          width: double.infinity,
+          child: TextButton.icon(
+            onPressed: _doneManually,
+            icon: const Icon(Icons.check_circle_outline, color: Colors.greenAccent),
+            label: const Text(
+              "Done — I've paired",
+              style: TextStyle(color: Colors.greenAccent),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
 
         SizedBox(
           width: double.infinity,
