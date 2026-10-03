@@ -72,6 +72,55 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
     }
   }
 
+  Future<void> _renameDevice() async {
+    final ctrl = TextEditingController(text: _overview?.hostname ?? '');
+    final newName = await showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF111827),
+        title: const Text('Rename device', style: TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: 'New device name',
+            hintStyle: TextStyle(color: Colors.white24),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, null), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    if (newName == null || newName.isEmpty) return;
+    try {
+      final token = await TokenService().getToken();
+      final r = await _dio.post(
+        '${ApiConstants.baseUrl}/api/device/${widget.deviceId}/rename',
+        data: {'name': newName},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      if (r.statusCode == 200 && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Renamed.')));
+        _loadOverview();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(
+            r.data is Map ? (r.data['error'] ?? 'Rename failed') : 'Rename failed')));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Network error')));
+      }
+    }
+  }
+
   Future<void> _generateReport() async {
     // Three choices — the user explicitly picks whether to capture fresh
     // evidence (slow, needs device online) or use what's already stored
@@ -334,11 +383,21 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
                                     letterSpacing: 2,
                                     fontWeight: FontWeight.w700)),
                             const SizedBox(height: 16),
-                            Text(_overview!.hostname,
-                                style: const TextStyle(
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.textPrimary)),
+                            Row(children: [
+                              Expanded(
+                                child: Text(_overview!.hostname,
+                                    style: const TextStyle(
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.textPrimary)),
+                              ),
+                              IconButton(
+                                tooltip: 'Rename this device',
+                                icon: const Icon(Icons.edit_outlined,
+                                    color: Colors.white54, size: 20),
+                                onPressed: _renameDevice,
+                              ),
+                            ]),
                             const SizedBox(height: 12),
                             Row(children: [
                               Container(

@@ -4,9 +4,10 @@ import '../../models/device.dart';
 import '../../services/device_service.dart';
 import '../../services/token_service.dart';
 import '../auth/login_screen.dart';
-import '../auth/emergency_contacts_screen.dart';
 import '../devices/device_details_screen.dart';
 import '../devices/pair_device_screen.dart';
+import '../help/help_screen.dart';
+import '../settings/settings_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -143,13 +144,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: TextStyle(fontSize: 13, letterSpacing: 4, color: Colors.white70)),
                 Row(mainAxisSize: MainAxisSize.min, children: [
                 IconButton(
-                  icon: const Icon(Icons.contacts_outlined, color: Colors.white54),
-                  tooltip: 'Emergency contacts',
+                  icon: const Icon(Icons.help_outline, color: Colors.white54),
+                  tooltip: 'Help & FAQ',
                   onPressed: () => Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const EmergencyContactsScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const HelpScreen()),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.settings_outlined, color: Colors.white54),
+                  tooltip: 'Settings',
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
                   ),
                 ),
                 IconButton(

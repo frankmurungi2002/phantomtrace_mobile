@@ -163,45 +163,68 @@ class _DevicesScreenState extends State<DevicesScreen> {
   }
 
   Future<void> _deleteDevice(Device d) async {
-    // Confirm first — irreversible.
-    final ok = await showDialog<bool>(
+    // Two options: Graceful (tell agent to self-uninstall first; recommended
+    // if the laptop is still online) vs Force (just wipe the DB row;
+    // leaves a zombie agent on the laptop until the owner removes it
+    // manually, used when the laptop is gone or offline forever).
+    final choice = await showDialog<String?>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF111827),
-        title: const Text('Delete this device?',
+        title: const Text('Remove this device?',
             style: TextStyle(color: Colors.white)),
-        content: Text(
-          '“${d.deviceName}” will be removed from your account. '
-          'This cannot be undone. The agent on that laptop will stop '
-          'reporting until you pair it again.',
-          style: const TextStyle(color: Colors.white70),
-        ),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(
+            '"${d.deviceName}" will be removed from your account.\n',
+            style: const TextStyle(color: Colors.white70),
+          ),
+          const Text(
+            'Clean uninstall tells the agent on the laptop to tear itself '
+            'down — removes autostart, deletes device.json, deletes the '
+            'PhantomTraceAgent.exe. Use this when the laptop is still '
+            'with you.\n',
+            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+          ),
+          const Text(
+            'Force remove deletes the record immediately. Use this only if '
+            'the laptop is lost, offline forever, or already handled '
+            'manually. Any still-running agent becomes orphaned.',
+            style: TextStyle(color: Colors.white60, fontSize: 13, height: 1.4),
+          ),
+        ]),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
+            onPressed: () => Navigator.pop(ctx, null),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
+            onPressed: () => Navigator.pop(ctx, 'force'),
             style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
-            child: const Text('DELETE'),
+            child: const Text('Force remove'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, 'graceful'),
+            child: const Text('Clean uninstall'),
           ),
         ],
       ),
     );
-    if (ok != true) return;
+    if (choice == null) return;
 
     try {
       final token = await TokenService().getToken();
       final dio = Dio(BaseOptions(validateStatus: (s) => true));
       final r = await dio.delete(
-        '${ApiConstants.baseUrl}/api/device/${d.id}',
+        '${ApiConstants.baseUrl}/api/device/${d.id}?mode=$choice',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       if (!mounted) return;
-      if (r.statusCode == 200) {
+      if (r.statusCode == 200 || r.statusCode == 202) {
+        final msg = r.statusCode == 202
+            ? 'Uninstall sent to ${d.deviceName}. The laptop will clean up as soon as it checks in.'
+            : '${d.deviceName} removed.';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${d.deviceName} deleted'),
+          SnackBar(content: Text(msg),
               backgroundColor: Colors.green.shade800),
         );
         await _refresh();

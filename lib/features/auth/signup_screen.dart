@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/constants/api_constants.dart';
@@ -6,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../services/notification_service.dart';
 import '../../services/token_service.dart';
 import '../dashboard/dashboard_screen.dart';
+import 'legal_webview_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -25,7 +27,14 @@ class _SignupScreenState extends State<SignupScreen> {
   bool obscure1 = true;
   bool obscure2 = true;
   bool _submitted = false;
+  bool _agreedToTerms = false;    // required to enable the "Create account" button
   String? errorMessage;
+
+  // Public URLs of the hosted legal pages. The backend serves them from
+  // ApiConstants.baseUrl/{terms,privacy}; we open them in the system browser
+  // so users see the real, versioned text.
+  static const _termsUrl   = '/terms';
+  static const _privacyUrl = '/privacy';
 
   final Dio _dio = Dio(BaseOptions(validateStatus: (s) => true));
 
@@ -50,6 +59,11 @@ class _SignupScreenState extends State<SignupScreen> {
     FocusScope.of(context).unfocus();
     setState(() { _submitted = true; errorMessage = null; });
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!_agreedToTerms) {
+      setState(() => errorMessage =
+          'Please read and accept the Terms of Service and Privacy Policy to continue.');
+      return;
+    }
 
     final name  = nameController.text.trim();
     final email = emailController.text.trim();
@@ -61,7 +75,10 @@ class _SignupScreenState extends State<SignupScreen> {
     try {
       final r = await _dio.post(
         '${ApiConstants.baseUrl}/api/auth/register',
-        data: {'name': name, 'email': email, 'phone': phone, 'password': pass},
+        data: {
+          'name': name, 'email': email, 'phone': phone, 'password': pass,
+          'accepted_terms': true,   // backend blocks the signup without this
+        },
       );
       if (r.statusCode == 201) {
         final token = r.data['token'] as String?;
@@ -88,6 +105,24 @@ class _SignupScreenState extends State<SignupScreen> {
         loading = false;
       });
     }
+  }
+
+  /// Builds a tap-recognizer that opens the given legal page in an in-app
+  /// WebView-free viewer (we fetch the HTML and show it). Keeps the user
+  /// inside the app instead of bouncing to an external browser.
+  TapGestureRecognizer _openUrlRecognizer(String path) {
+    return TapGestureRecognizer()
+      ..onTap = () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => LegalWebviewScreen(
+              title: path == '/terms' ? 'Terms of Service' : 'Privacy Policy',
+              path: path,
+            ),
+          ),
+        );
+      };
   }
 
   // ── Validators ────────────────────────────────────────────────────────────
@@ -260,7 +295,78 @@ class _SignupScreenState extends State<SignupScreen> {
               action: TextInputAction.done,
               onSubmitted: (_) => loading ? null : signup(),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
+
+            // ── Terms + Privacy acceptance ────────────────────────────────
+            // Required by Play Store policy. The checkbox state is persisted
+            // only for this signup attempt; the backend records the timestamp
+            // when the account is actually created.
+            InkWell(
+              onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+              borderRadius: BorderRadius.circular(10),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 24, height: 24,
+                      child: Checkbox(
+                        value: _agreedToTerms,
+                        onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
+                        activeColor: AppColors.primary,
+                        side: BorderSide(
+                          color: (_submitted && !_agreedToTerms)
+                              ? Colors.redAccent
+                              : Colors.white54,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text.rich(
+                        TextSpan(
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 13, height: 1.4),
+                          children: [
+                            const TextSpan(text: 'I have read and I agree to the '),
+                            TextSpan(
+                              text: 'Terms of Service',
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                                decoration: TextDecoration.underline,
+                              ),
+                              recognizer: _openUrlRecognizer(_termsUrl),
+                            ),
+                            const TextSpan(text: '  and  '),
+                            TextSpan(
+                              text: 'Privacy Policy',
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                                decoration: TextDecoration.underline,
+                              ),
+                              recognizer: _openUrlRecognizer(_privacyUrl),
+                            ),
+                            const TextSpan(text: '.'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (_submitted && !_agreedToTerms)
+              const Padding(
+                padding: EdgeInsets.only(top: 4, left: 36),
+                child: Text(
+                  'Required to create an account.',
+                  style: TextStyle(color: Colors.redAccent, fontSize: 12),
+                ),
+              ),
+            const SizedBox(height: 14),
 
             SizedBox(
               height: 54,
