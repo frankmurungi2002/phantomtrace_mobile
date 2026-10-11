@@ -232,11 +232,12 @@ class _BiosSetupScreenState extends State<BiosSetupScreen> {
                 letterSpacing: 2, fontWeight: FontWeight.w700)),
         const SizedBox(height: 12),
         if (steps.isEmpty)
-          const Text(
-            "No instructions were received from the agent yet. Start the "
-            "agent on your laptop at least once, then come back here.",
-            style: TextStyle(color: Colors.white60),
-          )
+          // Generic fallback — works for every laptop even when the agent
+          // hasn't reported its model yet. Covers the common keys and the
+          // common menu paths so the user is never stuck.
+          ..._fallbackSteps().asMap().entries.map(
+                (e) => _stepTile(e.key + 1, e.value),
+              )
         else
           ...steps.asMap().entries.map((e) => _stepTile(e.key + 1, e.value)),
         const SizedBox(height: 24),
@@ -288,6 +289,32 @@ class _BiosSetupScreenState extends State<BiosSetupScreen> {
       ],
     );
   }
+
+  /// Model-agnostic BIOS setup instructions. Used when the agent hasn't
+  /// yet reported this laptop's manufacturer/model (first boot, or an
+  /// older agent build). The steps are deliberately general so they fit
+  /// HP, Dell, Lenovo, Asus, Acer, MSI, Toshiba, etc. — the user just
+  /// has to try the common keys.
+  List<String> _fallbackSteps() => [
+        'Save your work and restart the laptop.',
+        'The moment the laptop manufacturer logo appears, press one of these '
+            'keys repeatedly: F2 (Dell/Asus/Acer), F10 (HP), F1 or Enter then '
+            'F1 (Lenovo/ThinkPad), DEL (MSI/custom builds). If the first key '
+            "doesn't work, restart and try the next.",
+        'Once in the BIOS/UEFI Setup, go to the Security tab and set an '
+            '"Administrator password" (sometimes called "Supervisor password" '
+            'or "BIOS password"). Pick something strong you will remember — '
+            'write it down and keep it safe. If you lose it, only the '
+            'laptop manufacturer can reset it.',
+        'Still in the BIOS, go to the Boot tab (sometimes "Boot Options" or '
+            '"Startup"). Find "USB Boot" / "Boot from USB" / "Removable '
+            'Devices" and set it to Disabled. Make sure the internal hard '
+            'drive is the first boot device.',
+        'Save your changes (usually F10 then Yes) and exit. Windows will '
+            'boot normally — nothing changes about how you use the laptop.',
+        'Come back to PhantomTrace and tap "I\'ve done it — mark protected" '
+            'below to confirm.',
+      ];
 
   Widget _stepTile(int n, String text) => Padding(
         padding: const EdgeInsets.only(bottom: 12),

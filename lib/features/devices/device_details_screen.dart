@@ -13,6 +13,7 @@ import '../commands/command_center_screen.dart';
 import '../evidence/evidence_screen.dart';
 import '../location/location_trail_screen.dart';
 import 'safe_zone_screen.dart';
+import 'bios_setup_screen.dart';
 
 class DeviceDetailsScreen extends StatefulWidget {
   final String deviceId;
@@ -34,6 +35,11 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
   bool _loading = true;
   bool _locking = false;
   bool _updatingStatus = false;
+  // BIOS protection status for this device. Fetched in parallel with
+  // overview so the warning banner can appear immediately. Null while
+  // we're still loading (don't show the banner during that first frame
+  // or it flickers in/out).
+  bool? _biosProtected;
   bool _generatingReport = false;
   late String _status;
   Timer? _refreshTimer;
@@ -64,16 +70,25 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
   Future<void> _loadOverview() async {
     try {
       final token = await TokenService().getToken();
-      final overview =
-          await DeviceOverviewService().getOverview(token!, widget.deviceId);
+      // Overview + BIOS status fetched in parallel so the warning banner
+      // can appear on first paint.
+      final overviewFut =
+          DeviceOverviewService().getOverview(token!, widget.deviceId);
+      final biosFut = _dio.get(
+        '${ApiConstants.baseUrl}/api/device/${widget.deviceId}/bios-info',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      final results = await Future.wait([overviewFut, biosFut]);
+      final overview = results[0] as DeviceOverview;
+      final biosR = results[1] as Response;
+      bool? biosProtected;
+      if (biosR.statusCode == 200 && biosR.data is Map) {
+        biosProtected = biosR.data['protected'] == true;
+      }
       if (mounted) setState(() {
         _overview = overview;
-        // IMPORTANT: sync _status from the server too. Otherwise if the
-        // user marks the device stolen, backs out, re-enters, our _status
-        // is reset from widget.initialStatus (which was passed in as 'SAFE')
-        // and the button stubbornly shows "Mark as Stolen" even though the
-        // backend knows it's STOLEN.
         if (overview.status.isNotEmpty) _status = overview.status;
+        if (biosProtected != null) _biosProtected = biosProtected;
         _loading = false;
       });
     } catch (e) {
@@ -455,6 +470,14 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
                       ),
                       const SizedBox(height: 14),
 
+                      // ── BIOS protection warning banner ─────────────────
+                      // Big, loud, action-oriented. Only shows when we
+                      // actually know BIOS is NOT set up — never flashes
+                      // on first paint while we're still loading.
+                      if (_biosProtected == false) _biosWarningBanner(),
+                      if (_biosProtected == false)
+                        const SizedBox(height: 14),
+
                       // Mark Stolen / Mark Found — single tap, high stakes.
                       // Lower padding, matched height with the other primary
                       // buttons on the page for a consistent rhythm.
@@ -645,6 +668,111 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen>
 
   /// Small pill showing ONLINE / OFFLINE / STOLEN with a dot. Used in the
   /// compact Device Intelligence header.
+  /// Opens the BIOS Setup Wizard for THIS device, then refreshes overview
+  /// on return so the warning banner disappears if the user confirmed.
+  void _openBiosSetup() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BiosSetupScreen(
+          deviceId: widget.deviceId,
+          deviceName: _overview?.hostname ?? 'device',
+        ),
+      ),
+    ).then((_) => _loadOverview());
+  }
+
+  /// Big, loud, action-oriented warning. The user should NOT be able to
+  /// miss this — it's the one defence software cannot enforce on its own.
+  /// Design: amber background, left-border accent, bold title ("USB-boot
+  /// protection off"), one-sentence plain-English why it matters, big
+  /// amber call-to-action button with a chevron that clearly says "Show
+  /// me how".
+  Widget _biosWarningBanner() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: _openBiosSetup,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
+          decoration: BoxDecoration(
+            // Amber tint over the dark surface — reads as "warning" without
+            // being as alarming as red (red is reserved for "stolen").
+            color: const Color(0xFF2A2010),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.amber.shade700, width: 1.2),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Container(
+                  width: 34, height: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade700.withOpacity(0.22),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.warning_amber_rounded,
+                      color: Colors.amber.shade400, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('USB-boot protection OFF',
+                          style: TextStyle(
+                              color: Colors.amber.shade200,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.5)),
+                      const SizedBox(height: 2),
+                      const Text('Set a BIOS password',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800)),
+                    ],
+                  ),
+                ),
+              ]),
+              const SizedBox(height: 10),
+              const Text(
+                'Without it, a thief can boot your laptop from a USB stick '
+                'and reinstall Windows — bypassing PhantomTrace entirely. '
+                'This takes 2 minutes and only needs to be done once.',
+                style: TextStyle(
+                    color: Colors.white70, fontSize: 13, height: 1.45),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _openBiosSetup,
+                  icon: const Icon(Icons.shield_outlined, size: 18),
+                  label: const Text(
+                    'Show me how (2 min)',
+                    style: TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w800),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber.shade700,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _statusPill({required bool isStolen, required bool online}) {
     final color = isStolen
         ? Colors.red

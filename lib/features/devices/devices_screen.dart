@@ -299,43 +299,48 @@ class _DevicesScreenState extends State<DevicesScreen> {
               const SizedBox(height: 4),
               Text(d.status, style: const TextStyle(color: Colors.white70)),
               const SizedBox(height: 4),
-              Row(children: [
-                Text(
-                  d.online ? 'ONLINE' : 'OFFLINE',
-                  style: TextStyle(
-                    color: d.online ? const Color(0xFF22C55E) : Colors.orange,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
+              Text(
+                d.online ? 'ONLINE' : 'OFFLINE',
+                style: TextStyle(
+                  color: d.online ? const Color(0xFF22C55E) : Colors.orange,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+              // ── Loud, tappable BIOS warning strip ──────────────────
+              // Replaces the invisible pill. The words carry the meaning,
+              // not just the colour — users shouldn't have to guess.
+              if (!d.biosProtected) ...[
+                const SizedBox(height: 8),
+                InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: () => _openBiosSetup(d),
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(10, 8, 8, 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2A2010),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.amber.shade700, width: 1),
+                    ),
+                    child: Row(children: [
+                      Icon(Icons.warning_amber_rounded,
+                          color: Colors.amber.shade400, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Set BIOS password — tap to see how',
+                          style: TextStyle(
+                              color: Colors.amber.shade200,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      Icon(Icons.chevron_right,
+                          color: Colors.amber.shade400, size: 16),
+                    ]),
                   ),
                 ),
-                const SizedBox(width: 10),
-                // Yellow BIOS warning badge — the device isn't protected
-                // against USB boot yet. Tap to open the setup wizard.
-                if (!d.biosProtected)
-                  GestureDetector(
-                    onTap: () => _openBiosSetup(d),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.18),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                            color: Colors.amberAccent.withOpacity(0.7)),
-                      ),
-                      child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.warning_amber_rounded,
-                            color: Colors.amberAccent, size: 12),
-                        SizedBox(width: 4),
-                        Text('BIOS',
-                            style: TextStyle(
-                                color: Colors.amberAccent,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1)),
-                      ]),
-                    ),
-                  ),
-              ]),
+              ],
             ],
           ),
         ),

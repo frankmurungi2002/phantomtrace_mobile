@@ -6,6 +6,7 @@ import '../../services/token_service.dart';
 import '../auth/login_screen.dart';
 import '../devices/device_details_screen.dart';
 import '../devices/pair_device_screen.dart';
+import '../devices/bios_setup_screen.dart';
 import '../help/help_screen.dart';
 import '../settings/settings_screen.dart';
 
@@ -250,30 +251,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     fontSize: 12,
                   ),
                 ),
-                const SizedBox(width: 10),
-                // BIOS protection warning — tap-through handled by the whole
-                // card's Open Device button; here we just signal the status.
-                if (!device.biosProtected)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.withOpacity(0.18),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                          color: Colors.amberAccent.withOpacity(0.7)),
-                    ),
-                    child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                      Icon(Icons.warning_amber_rounded,
-                          color: Colors.amberAccent, size: 12),
-                      SizedBox(width: 4),
-                      Text('BIOS',
-                          style: TextStyle(
-                              color: Colors.amberAccent,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1)),
-                    ]),
-                  ),
+                // The BIOS pill is gone from here — replaced by a far more
+                // prominent full-width warning strip below the device name.
+                // A tiny pill is too easy to miss.
               ],
             ),
             const SizedBox(height: 12),
@@ -282,6 +262,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 8),
             Text('Last seen: ${_humanizeLastSeen(device.lastSeen)}',
                 style: const TextStyle(color: Colors.white54, fontSize: 12)),
+
+            // ── BIOS protection warning (tappable) ───────────────────────
+            // Big amber strip that says WHAT is wrong and INVITES the fix.
+            // "A color cannot be perceived as a warning if it doesn't
+            //  communicate" — Frank was right. So the words carry the
+            // meaning, not just the colour.
+            if (!device.biosProtected) ...[
+              const SizedBox(height: 14),
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BiosSetupScreen(
+                      deviceId: device.id,
+                      deviceName: device.deviceName,
+                    ),
+                  ),
+                ).then((_) => _loadDevices()),
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2A2010),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: Colors.amber.shade700, width: 1),
+                  ),
+                  child: Row(children: [
+                    Icon(Icons.warning_amber_rounded,
+                        color: Colors.amber.shade400, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('USB-boot protection off',
+                              style: TextStyle(
+                                  color: Colors.amber.shade200,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 13)),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Set a BIOS password — tap to see how',
+                            style: TextStyle(
+                                color: Colors.white60, fontSize: 11.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right,
+                        color: Colors.white54, size: 20),
+                  ]),
+                ),
+              ),
+            ],
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
